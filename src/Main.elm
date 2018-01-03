@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Slider exposing (..)
+import Input.Number as Number
 
 main =
     Html.program { init = init, view = view, update = update, subscriptions = always Sub.none }
@@ -23,6 +23,10 @@ type Page
     | Page3
     | CharacterSheet
 
+type alias ListItem =
+    { id : String,
+    name : String,
+    value : Maybe Int}
 
 type alias Character =
     { name : String
@@ -33,19 +37,16 @@ type alias Character =
     , age : String
     , job : String
     , familyStatus : String
-    , lifePoints : Int
-    , actsSlider : Slider.Model
-    , knowledge : Int
-    , interact : Int
-    , unassignedPoints : Int
+    , lifePoints : Maybe Int
+    , knowledgeList : List  ListItem
+    , interactList : List  ListItem
+    , actsList : List ListItem
+    , unassignedPoints : String
     }
-
-initSlider =
-     { val = 1 , minVal = 0 , maxVal = 100 , step = 1 }
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" 0 initSlider 0 0 500) Page1, Cmd.none)
+    (Model (Character "" "" "" "" "" "" "" "" (Just 0) [(ListItem "knowledge" "Wissen" (Just 0)))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
 
 
 
@@ -61,12 +62,10 @@ type Msg
     | ChangeAge String
     | ChangeJob String
     | ChangeFamilystatus String
-    | ChangeLifepoints Int
-    | ChangeKnowledge Int
-    | ChangeInteract Int
+    | ChangeLifepoints (Maybe Int)
     | ChangePage Page
-    | ActsSlider Slider.Msg
-
+    | FocusChanged Bool
+    | ChangeListItem (Maybe Int)
 
 update msg model =
     case msg of
@@ -133,31 +132,15 @@ update msg model =
             in
                 ({ model | character = { character | lifePoints = lifePoints } }, Cmd.none)
 
-        ActsSlider acts ->
-            let
-                updatedModel =
-                    Slider.update acts model.character.actsSlider
-                character =
-                    model.character
-            in
-                ( { model | character = { character | actsSlider = Tuple.first(updatedModel) } }, Cmd.none )
-
-        ChangeKnowledge knowledge ->
-            let
-                character =
-                    model.character
-            in
-                ({ model | character = { character | knowledge = knowledge } }, Cmd.none)
-
-        ChangeInteract interact ->
-            let
-                character =
-                    model.character
-            in
-                ({ model | character = { character | interact = interact } }, Cmd.none)
+        ChangeListItem listitem ->
+            (model, Cmd.none)
 
         ChangePage page ->
             ({ model | page = page }, Cmd.none)
+
+        FocusChanged bool ->
+            (model, Cmd.none)
+
 
 
 
@@ -234,15 +217,49 @@ addInput model title placeholderText inputMessage =
             ]
         ]
 
-addInputSlider model title inputMessage =
+addInputNumerical value title inputMessage =
     div [ class "field" ]
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
-            [ 
+            [ Number.input
+                { onInput = inputMessage
+                , maxLength = Nothing
+                , maxValue = Just 100
+                , minValue = Just 0,
+                hasFocus = Just FocusChanged
+                }
+                [ class "numberInput"
+                ]
+                value
             ]
         ]
 
+
+drawNumericalList list =
+    div [ class "column"]
+         (List.map createNumbers list)
+
+
+createNumbers: ListItem -> Html Msg
+createNumbers list =
+    div [ class "field" ]
+        [ label [ class "label" ]
+            [ text list.name ]
+        , div [ class "control" ]
+        [
+        Number.input
+                        { onInput = ChangeListItem
+                        , maxLength = Nothing
+                        , maxValue = Just 100
+                        , minValue = Just 0,
+                        hasFocus = Just FocusChanged
+                        }
+                        [ class "numberInput"
+                        ]
+                        list.value
+                    ]
+        ]
 
 page1 : Model -> Html Msg
 page1 model =
@@ -272,12 +289,20 @@ page3 : Model -> Html Msg
 page3 model =
     div [ class "container" ]
         [ drawTabs model
-       , Html.map ActsSlider <| Slider.view model.character.actsSlider
-
-        {--, addInput model "Lebenspunkte" "Bis 100" ChangeLifepoints
-        , addInput model "Handeln" "Bis 100" ChangeActs
-        , addInput model "Wissen" "Bis 100" ChangeKnowledge
-        , addInput model "Interagieren" "Bis 100" ChangeInteract--}
+        , div [ class "field" ]
+        [ label [ class "label" ]
+            [ text "Verbleibende Skillpunkte" ]
+        , div [ class "control" ]
+            [ input [ class "input", type_ "text", value model.character.unassignedPoints ]
+                []
+            ]
+        ]
+        , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
+        , div [ class "columns"] [
+        drawNumericalList model.character.actsList
+        , drawNumericalList model.character.knowledgeList
+        , drawNumericalList model.character.interactList
+        ]
         , (nextButton model CharacterSheet)
         ]
 
