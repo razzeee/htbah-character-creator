@@ -46,7 +46,7 @@ type alias Character =
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 0) [(ListItem "knowledge" "Wissen" (Just 0))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
+    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "knowledge" "Wissen" (Just 0))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
 
 
 
@@ -151,16 +151,16 @@ view : Model -> Html Msg
 view model =
     case model.page of
         Page1 ->
-            page1 model
+            headerAndSection page1 model
 
         Page2 ->
-            page2 model
+            headerAndSection page2 model
 
         Page3 ->
-            page3 model
+            headerAndSection page3 model
 
         CharacterSheet ->
-            characterSheet model
+            headerAndSection characterSheet model
 
 
 setTabActive : { b | page : a } -> a -> Attribute msg
@@ -173,9 +173,11 @@ setTabActive model page =
 
 drawTabs : Model -> Html Msg
 drawTabs model =
-    div [ class "tabs is-boxed" ]
-        [ ul []
-            [ li
+    div [ class "hero-foot" ]
+    [  nav [ class "tabs is-boxed is-fullwidth" ]
+        [ div [ class "container" ]
+            [  ul []
+                [ li
                 [ setTabActive model Page1
                 ]
                 [ a []
@@ -193,8 +195,10 @@ drawTabs model =
                 [ a []
                     [ text "Character Sheet" ]
                 ]
-            ]
-        ]
+            ] 
+            ] 
+        ] 
+    ]
 
 
 nextButton : Model -> Page -> Html Msg
@@ -249,35 +253,49 @@ createNumbers list =
         , div [ class "control" ]
         [
         Number.input
-                        { onInput = ChangeListItem
-                        , maxLength = Nothing
-                        , maxValue = Just 100
-                        , minValue = Just 0,
-                        hasFocus = Just FocusChanged
-                        }
-                        [ class "numberInput"
-                        ]
-                        list.value
-                    ]
+                { onInput = ChangeListItem
+                , maxLength = Nothing
+                , maxValue = Just 100
+                , minValue = Just 0,
+                hasFocus = Just FocusChanged
+                }
+                [ class "numberInput"
+                ]
+                list.value
+            ]
         ]
+
+headerAndSection page model =
+    div [] 
+    [section [ class "hero is-primary" ]
+    [  div [ class "hero-body" ]
+        [  div [ class "container" ]
+            [  h1 [ class "title" ]
+                [ text "How to be a hero" ] 
+            , h2 [ class "subtitle" ]
+                [ text "Characterblatt-Ersteller" ] 
+            ] 
+        ],
+        drawTabs model
+    ],
+        page model
+    ]
 
 page1 : Model -> Html Msg
 page1 model =
     div [ class "container" ]
-        [ drawTabs model
-        , addInput model "Vorname" "Der Vorname deines Characters" ChangeFirstname
+        [ 
+        addInput model "Vorname" "Der Vorname deines Characters" ChangeFirstname
         , addInput model "Name" "Der Nachname deines Characters" ChangeName
         , addInput model "Statur" "Die Statur deines Characters" ChangeStature
         , addInput model "Religion" "Deine Religion" ChangeReligion
         , (nextButton model Page2)
         ]
 
-
 page2 : Model -> Html Msg
 page2 model =
     div [ class "container" ]
-        [ drawTabs model
-        , addInput model "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex
+        [  addInput model "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex
         , addInput model "Alter" "Wie alt bist du?" ChangeAge
         , addInput model "Beruf" "Dein Beruf" ChangeJob
         , addInput model "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus
@@ -288,12 +306,11 @@ page2 model =
 page3 : Model -> Html Msg
 page3 model =
     div [ class "container" ]
-        [ drawTabs model
-        , div [ class "field" ]
+        [  div [ class "field" ]
         [ label [ class "label" ]
             [ text "Verbleibende Skillpunkte" ]
         , div [ class "control" ]
-            [ input [ class "input", type_ "text", value model.character.unassignedPoints ]
+            [ input [ class "input is-large", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
                 []
             ]
         ]
