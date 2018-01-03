@@ -18,9 +18,8 @@ type alias Model =
 
 
 type Page
-    = Page1
-    | Page2
-    | Page3
+    = PageBaseProperties
+    | PageSkillpoints
     | CharacterSheet
 
 type alias ListItem =
@@ -46,7 +45,7 @@ type alias Character =
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "knowledge" "Wissen" (Just 0))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
+    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "knowledge" "Wissen" (Just 0))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") PageBaseProperties, Cmd.none)
 
 
 
@@ -150,17 +149,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model.page of
-        Page1 ->
-            headerAndSection page1 model
+        PageBaseProperties ->
+            renderContent pageBaseproperties model
 
-        Page2 ->
-            headerAndSection page2 model
-
-        Page3 ->
-            headerAndSection page3 model
+        PageSkillpoints ->
+            renderContent pageSkillpoints model
 
         CharacterSheet ->
-            headerAndSection characterSheet model
+            renderContent characterSheet model
 
 
 setTabActive : { b | page : a } -> a -> Attribute msg
@@ -178,22 +174,18 @@ drawTabs model =
         [ div [ class "container" ]
             [  ul []
                 [ li
-                [ setTabActive model Page1
+                [ setTabActive model PageBaseProperties
                 ]
                 [ a []
-                    [ text "Seite 1" ]
+                    [ text "Basiseigenschaften" ]
                 ]
-            , li [ setTabActive model Page2 ]
+            , li [ setTabActive model PageSkillpoints ]
                 [ a []
-                    [ text "Seite 2" ]
-                ]
-            , li [ setTabActive model Page3 ]
-                [ a []
-                    [ text "Seite 3" ]
+                    [ text "Skillpunkte" ]
                 ]
             , li [ setTabActive model CharacterSheet ]
                 [ a []
-                    [ text "Character Sheet" ]
+                    [ text "Character-Blatt" ]
                 ]
             ] 
             ] 
@@ -201,11 +193,15 @@ drawTabs model =
     ]
 
 
-nextButton : Model -> Page -> Html Msg
-nextButton model page =
-    div [ class "field is-grouped" ]
+nextButton : Model -> Page -> Page -> Html Msg
+nextButton model previousPage nextPage =
+    div [ class "field is-grouped is-centered" ]
         [ div [ class "control" ]
-            [ button [ class "button is-link", onClick (ChangePage page) ]
+            [ button [ class "button is-link", onClick (ChangePage previousPage) ]
+                [ text "Vorherige" ]
+            ],
+            div [ class "control" ]
+            [ button [ class "button is-link", onClick (ChangePage nextPage) ]
                 [ text "Nächste" ]
             ]
         ]
@@ -233,7 +229,7 @@ addInputNumerical value title inputMessage =
                 , minValue = Just 0,
                 hasFocus = Just FocusChanged
                 }
-                [ class "numberInput"
+                [ class "input"
                 ]
                 value
             ]
@@ -259,13 +255,13 @@ createNumbers list =
                 , minValue = Just 0,
                 hasFocus = Just FocusChanged
                 }
-                [ class "numberInput"
+                [ class "input"
                 ]
                 list.value
             ]
         ]
 
-headerAndSection page model =
+renderContent page model =
     div [] 
     [section [ class "hero is-primary" ]
     [  div [ class "hero-body" ]
@@ -278,49 +274,52 @@ headerAndSection page model =
         ],
         drawTabs model
     ],
-        page model
+        page model,
+        footer [ class "footer" ]
+    [ div [ class "container" ]
+        [ div [ class "content has-text-centered" ]
+            [ p []
+                [ text "How to be a hero character sheet creator by Kolja Lampe. The source code is licensed MIT."
+                ]
+            ]
+        ]
+    ]
     ]
 
-page1 : Model -> Html Msg
-page1 model =
+pageBaseproperties : Model -> Html Msg
+pageBaseproperties model =
     div [ class "container" ]
         [ 
         addInput model "Vorname" "Der Vorname deines Characters" ChangeFirstname
         , addInput model "Name" "Der Nachname deines Characters" ChangeName
         , addInput model "Statur" "Die Statur deines Characters" ChangeStature
         , addInput model "Religion" "Deine Religion" ChangeReligion
-        , (nextButton model Page2)
-        ]
-
-page2 : Model -> Html Msg
-page2 model =
-    div [ class "container" ]
-        [  addInput model "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex
+        , addInput model "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex
         , addInput model "Alter" "Wie alt bist du?" ChangeAge
+        , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
         , addInput model "Beruf" "Dein Beruf" ChangeJob
         , addInput model "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus
-        , (nextButton model Page3)
+        , (nextButton model PageBaseProperties PageSkillpoints)
         ]
 
-
-page3 : Model -> Html Msg
-page3 model =
+pageSkillpoints : Model -> Html Msg
+pageSkillpoints model =
     div [ class "container" ]
-        [  div [ class "field" ]
-        [ label [ class "label" ]
+        [ 
+             div [ class "field" ]
+        [ label [ class "label has-text-centered" ]
             [ text "Verbleibende Skillpunkte" ]
         , div [ class "control" ]
-            [ input [ class "input is-large", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
+            [ input [ class "input is-large has-text-centered is-static", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
                 []
             ]
         ]
-        , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
         , div [ class "columns"] [
         drawNumericalList model.character.actsList
         , drawNumericalList model.character.knowledgeList
         , drawNumericalList model.character.interactList
         ]
-        , (nextButton model CharacterSheet)
+        , (nextButton model PageBaseProperties CharacterSheet)
         ]
 
 
