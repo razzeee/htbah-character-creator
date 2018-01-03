@@ -46,7 +46,7 @@ type alias Character =
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 0) [(ListItem "knowledge" "Wissen" (Just 0)))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
+    (Model (Character "" "" "" "" "" "" "" "" (Just 0) [(ListItem "knowledge" "Wissen" (Just 0))] [(ListItem"interact" "Interagieren" (Just 0))] [(ListItem "acts" "Handeln" (Just 0))] "500") Page1, Cmd.none)
 
 
 
