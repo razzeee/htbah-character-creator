@@ -68,9 +68,9 @@ type Msg
     | ChangeLifepoints (Maybe Int)
     | ChangePage Page
     | FocusChanged Bool
-    | ChangeActsList (Maybe Int) String
-    | ChangeKnowledgeList (Maybe Int) String
-    | ChangeInteractList (Maybe Int) String
+    | ChangeActsList String (Maybe Int)
+    | ChangeKnowledgeList String (Maybe Int)
+    | ChangeInteractList String (Maybe Int)
 
 update msg model =
     case msg of
@@ -137,40 +137,35 @@ update msg model =
             in
                 ({ model | character = { character | lifePoints = lifePoints } }, Cmd.none)
 
-        ChangeActsList value name ->
+        ChangeActsList name value ->
             let
                 character =
                     model.character
 
-                value = List.Extra.find (\value -> value.name == name) model.character.actsList
+                actsListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.actsList
             in
-                ({ model | character = { character | actsList = value } }, Cmd.none)
+                ({ model | character = { character | actsList = actsListNew } }, Cmd.none)
 
 
-        ChangeKnowledgeList value name ->
+        ChangeKnowledgeList name value ->
             let
                 character =
                     model.character
 
-                item = List.Extra.updateIf (\value -> value.name == name) (\input -> input.value | value = value) model.character.knowledgeList
+                knowledgeListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.knowledgeList
 
-                case item of
-                    Nothing ->
-                        NoOp
-                    Just knowledgeItem ->
-                        knowledgeItem
             in
-                ({ model | character = { character | knowledgeList = knowledgeItem } }, Cmd.none)
+                ({ model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none)
 
 
-        ChangeInteractList value name ->
+        ChangeInteractList name value ->
             let
                 character =
                     model.character
 
-                value = List.Extra.find (\value -> value.name == name) model.character.interactList
+                interactListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.interactList
             in
-                ({ model | character = { character | interactList = value } }, Cmd.none)
+                ({ model | character = { character | interactList = interactListNew } }, Cmd.none)
 
         ChangePage page ->
             ({ model | page = page }, Cmd.none)
@@ -289,7 +284,7 @@ createNumbers listItem =
         , div [ class "control" ]
         [
         Number.input
-                { onInput = ChangeActsList list listItem.name
+                { onInput = ChangeActsList listItem.name
                 , maxLength = Nothing
                 , maxValue = Just 100
                 , minValue = Just 0,
