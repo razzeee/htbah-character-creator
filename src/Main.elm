@@ -16,6 +16,9 @@ main =
 type alias Model =
     { character : Character
     , page : Page
+    , inputNewActsItem : String
+    , inputNewKnowledgeItem : String
+    , inputNewInteractItem : String
     }
 
 
@@ -49,8 +52,9 @@ type alias Character =
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "Wissen" (Just 0) True)] [(ListItem "Interagieren" (Just 0) True)] [(ListItem "Handeln" (Just 0) True)] "500" "img/character.jpg") PageBaseProperties, Cmd.none)
-
+    (Model (Character "" "" "" "" "" "" "" "" (Just 100) 
+    [(ListItem "Wissen" (Just 0) True)] [(ListItem "Interagieren" (Just 0) True)] [(ListItem "Handeln" (Just 0) True)] 
+    "500" "img/character.jpg") PageBaseProperties "" "" "", Cmd.none)
 
 
 -- UPDATE
@@ -71,6 +75,15 @@ type Msg
     | ChangeActsList String (Maybe Int)
     | ChangeKnowledgeList String (Maybe Int)
     | ChangeInteractList String (Maybe Int)
+    | ChangeActsListRemoveItem String
+    | ChangeKnowledgeListRemoveItem String
+    | ChangeInteractListRemoveItem String
+    | InputNewItemActs String
+    | ChangeActsAddNewItem
+    | InputNewItemKnowledge String
+    | ChangeKnowledgeAddNewItem
+    | InputNewItemInteract String
+    | ChangeInteractAddNewItem
 
 update msg model =
     case msg of
@@ -166,6 +179,70 @@ update msg model =
                 interactListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.interactList
             in
                 ({ model | character = { character | interactList = interactListNew } }, Cmd.none)
+
+        ChangeActsListRemoveItem name ->
+            let
+                character =
+                    model.character
+
+                actsListNew = List.filter (\value -> value.name /= name) model.character.actsList
+            in
+                ({ model | character = { character | actsList = actsListNew } }, Cmd.none)
+
+
+        ChangeKnowledgeListRemoveItem name ->
+            let
+                character =
+                    model.character
+
+                knowledgeListNew = List.filter (\value -> value.name /= name) model.character.knowledgeList
+            in
+                ({ model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none)
+
+        ChangeInteractListRemoveItem name ->
+            let
+                character =
+                    model.character
+
+                interactListNew = List.filter (\value -> value.name /= name) model.character.interactList
+            in
+                ({ model | character = { character | interactList = interactListNew } }, Cmd.none)
+
+        ChangeActsAddNewItem ->
+                let
+                character =
+                    model.character
+
+                newList = List.append model.character.actsList [(ListItem model.inputNewActsItem (Just 0) False)]
+            in
+                ({ model | character = { character | actsList = newList } }, Cmd.none)
+        
+        InputNewItemActs value ->
+            ({ model | inputNewActsItem = value }, Cmd.none)
+
+        ChangeKnowledgeAddNewItem ->
+                let
+                character =
+                    model.character
+
+                newList = List.append model.character.knowledgeList [(ListItem model.inputNewKnowledgeItem (Just 0) False)]
+            in
+                ({ model | character = { character | knowledgeList = newList } }, Cmd.none)
+        
+        InputNewItemKnowledge value ->
+            ({ model | inputNewKnowledgeItem = value }, Cmd.none)
+
+        ChangeInteractAddNewItem ->
+                let
+                character =
+                    model.character
+
+                newList = List.append model.character.interactList [(ListItem model.inputNewInteractItem (Just 0) False)]
+            in
+                ({ model | character = { character | interactList = newList } }, Cmd.none)
+        
+        InputNewItemInteract value ->
+            ({ model | inputNewInteractItem = value }, Cmd.none)
 
         ChangePage page ->
             ({ model | page = page }, Cmd.none)
@@ -271,17 +348,27 @@ addInputNumerical value title inputMessage =
         ]
 
 
-drawNumericalList list =
+drawActsList list =
     div [ class "column"]
-         (List.map createNumbers list)
+         (List.map createActsNumbers list)
 
 
-createNumbers: ListItem -> Html Msg
-createNumbers listItem =
-    div [ class "field" ]
-        [ label [ class "label" ]
+drawKnowledgeList list =
+    div [ class "column"]
+         (List.map createKnowledgeNumbers list)
+
+
+drawInteractList list =
+    div [ class "column"]
+         (List.map createInteractNumbers list)
+
+createActsNumbers listItem =
+    div [] [
+        label [ class "label" ]
             [ text listItem.name ]
-        , div [ class "control" ]
+        , 
+    div [ class "field has-addons" ]
+        [ div [ class "control" ]
         [
         Number.input
                 { onInput = ChangeActsList listItem.name
@@ -294,7 +381,58 @@ createNumbers listItem =
                 ]
                 listItem.value
             ]
+        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeActsListRemoveItem listItem.name)] [text "X"]]
+        else  div [class "control"] []
         ]
+    ]
+
+createKnowledgeNumbers listItem =
+    div [] [
+        label [ class "label" ]
+            [ text listItem.name ]
+        , 
+    div [ class "field has-addons" ]
+        [ div [ class "control" ]
+        [
+        Number.input
+                { onInput = ChangeKnowledgeList listItem.name
+                , maxLength = Nothing
+                , maxValue = Just 100
+                , minValue = Just 0,
+                hasFocus = Just FocusChanged
+                }
+                [ class "input"
+                ]
+                listItem.value
+            ]
+        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name)] [text "X"]]
+        else  div [class "control"] []
+        ]
+    ]
+
+createInteractNumbers listItem =
+    div [] [
+        label [ class "label" ]
+            [ text listItem.name ]
+        , 
+    div [ class "field has-addons" ]
+        [ div [ class "control" ]
+        [
+        Number.input
+                { onInput = ChangeInteractList listItem.name
+                , maxLength = Nothing
+                , maxValue = Just 100
+                , minValue = Just 0,
+                hasFocus = Just FocusChanged
+                }
+                [ class "input"
+                ]
+                listItem.value
+            ]
+        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name)] [text "X"]]
+        else  div [class "control"] []
+        ]
+    ]
 
 renderContent page model =
     div [] 
@@ -350,9 +488,14 @@ pageSkillpoints model =
             ]
         ]
         , div [ class "columns"] [
-        drawNumericalList model.character.actsList
-        , drawNumericalList model.character.knowledgeList
-        , drawNumericalList model.character.interactList
+        drawActsList model.character.actsList
+        , drawKnowledgeList model.character.knowledgeList
+        , drawInteractList model.character.interactList
+        ]
+        , div [ class "columns"] [
+        renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
+        , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem
+        , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem
         ]
         , (nextButton model PageBaseProperties CharacterSheet)
         ]
@@ -467,3 +610,20 @@ convertMaybeIntToString input =
         "0"
         Just value ->
         toString value
+
+renderInputForNewItem value inputEvent onClickEvent =
+        div [class "column"] [
+            div [ class "field has-addons" ]
+                [ div [ class "control" ]
+                    [ Text.input
+                        (Text.defaultOptions inputEvent)
+                        [ class "input", type_ "text", placeholder "Neuer Wert" ]
+                        value
+                    ]
+                , div [ class "control" ] 
+                [
+                    button [ class "button is-info", onClick onClickEvent ] 
+                    [i [ class "fa fa-plus" ] []]
+                ]
+            ]
+        ]
