@@ -25,7 +25,7 @@ type alias Model =
 type Page
     = PageBaseProperties
     | PageSkillpoints
-    | CharacterSheet
+    | PageCharacterSheet
 
 type alias ListItem =
     {
@@ -244,8 +244,8 @@ update msg model =
         InputNewItemInteract value ->
             ({ model | inputNewInteractItem = value }, Cmd.none)
 
-        ChangePage page ->
-            ({ model | page = page }, Cmd.none)
+        ChangePage newPage ->
+            ({ model | page = newPage }, Cmd.none)
 
         FocusChanged bool ->
             (model, Cmd.none)
@@ -265,8 +265,8 @@ view model =
         PageSkillpoints ->
             renderContent pageSkillpoints model
 
-        CharacterSheet ->
-            renderContent characterSheet model
+        PageCharacterSheet ->
+            renderContent pagecharacterSheet model
 
 
 setTabActive : { b | page : a } -> a -> Attribute msg
@@ -293,7 +293,7 @@ drawTabs model =
                 [ a []
                     [ text "Skillpunkte" ]
                 ]
-            , li [ setTabActive model CharacterSheet ]
+            , li [ setTabActive model PageCharacterSheet ]
                 [ a []
                     [ text "Character-Blatt" ]
                 ]
@@ -303,16 +303,27 @@ drawTabs model =
     ]
 
 
-nextButton : Model -> Page -> Page -> Html Msg
+nextButton : Model -> Maybe Page -> Maybe Page -> Html Msg
 nextButton model previousPage nextPage =
-    div [ class "field is-grouped is-centered" ]
+    div [ class "field  is-grouped is-grouped-centered" ]
         [ div [ class "control" ]
-            [ button [ class "button is-link", onClick (ChangePage previousPage) ]
-                [ text "Vorherige" ]
+            [ case previousPage of
+                Nothing ->
+                    (div [] [])
+
+                Just value ->
+                    (button [ class "button is-link", onClick (ChangePage value) ]
+                    [ text "Vorherige" ])
+
             ],
             div [ class "control" ]
-            [ button [ class "button is-link", onClick (ChangePage nextPage) ]
-                [ text "Nächste" ]
+            [ case nextPage of
+                Nothing ->
+                    (div [] [])
+
+                Just value ->
+                    (button [ class "button is-link", onClick (ChangePage value) ]
+                    [ text "Nächste" ])
             ]
         ]
 
@@ -472,7 +483,7 @@ pageBaseproperties model =
         , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
         , addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
         , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
-        , (nextButton model PageBaseProperties PageSkillpoints)
+        , (nextButton model Nothing (Just PageSkillpoints))
         ]
 
 pageSkillpoints : Model -> Html Msg
@@ -497,12 +508,12 @@ pageSkillpoints model =
         , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem
         , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem
         ]
-        , (nextButton model PageBaseProperties CharacterSheet)
+        , (nextButton model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
 
 
-characterSheet : Model -> Html Msg
-characterSheet model =
+pagecharacterSheet : Model -> Html Msg
+pagecharacterSheet model =
     div [ class "container" ]
         [ 
              div [ class "field" ]
@@ -559,7 +570,7 @@ characterSheet model =
             , div [ class "column" ] []
             , div [ class "column" ] []
         ]
-        , (nextButton model PageSkillpoints CharacterSheet)
+        , (nextButton model (Just PageSkillpoints) Nothing)
         ]
 
 
