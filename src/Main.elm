@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Input.Number as Number
+import Input.Text as Text
 import List.Extra exposing (..)
 
 main =
@@ -24,7 +25,7 @@ type Page
     | CharacterSheet
 
 type alias ListItem =
-    { id : String,
+    {
     name : String,
     value : Maybe Int,
     masterItem : Bool}
@@ -48,7 +49,7 @@ type alias Character =
 
 init : (Model, Cmd Msg)
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "knowledge" "Wissen" (Just 0) True)] [(ListItem"interact" "Interagieren" (Just 0) True)] [(ListItem "acts" "Handeln" (Just 0) True)] "500" "img/character.jpg") PageBaseProperties, Cmd.none)
+    (Model (Character "" "" "" "" "" "" "" "" (Just 100) [(ListItem "Wissen" (Just 0) True)] [(ListItem "Interagieren" (Just 0) True)] [(ListItem "Handeln" (Just 0) True)] "500" "img/character.jpg") PageBaseProperties, Cmd.none)
 
 
 
@@ -67,7 +68,9 @@ type Msg
     | ChangeLifepoints (Maybe Int)
     | ChangePage Page
     | FocusChanged Bool
-    | ChangeListItem (Maybe Int)
+    | ChangeActsList (Maybe Int) String
+    | ChangeKnowledgeList (Maybe Int) String
+    | ChangeInteractList (Maybe Int) String
 
 update msg model =
     case msg of
@@ -134,8 +137,40 @@ update msg model =
             in
                 ({ model | character = { character | lifePoints = lifePoints } }, Cmd.none)
 
-        ChangeListItem listitem ->
-            (model, Cmd.none)
+        ChangeActsList value name ->
+            let
+                character =
+                    model.character
+
+                value = List.Extra.find (\value -> value.name == name) model.character.actsList
+            in
+                ({ model | character = { character | actsList = value } }, Cmd.none)
+
+
+        ChangeKnowledgeList value name ->
+            let
+                character =
+                    model.character
+
+                item = List.Extra.updateIf (\value -> value.name == name) (\input -> input.value | value = value) model.character.knowledgeList
+
+                case item of
+                    Nothing ->
+                        NoOp
+                    Just knowledgeItem ->
+                        knowledgeItem
+            in
+                ({ model | character = { character | knowledgeList = knowledgeItem } }, Cmd.none)
+
+
+        ChangeInteractList value name ->
+            let
+                character =
+                    model.character
+
+                value = List.Extra.find (\value -> value.name == name) model.character.interactList
+            in
+                ({ model | character = { character | interactList = value } }, Cmd.none)
 
         ChangePage page ->
             ({ model | page = page }, Cmd.none)
@@ -210,13 +245,15 @@ nextButton model previousPage nextPage =
         ]
 
 
-addInput model title placeholderText inputMessage =
+addInput title placeholderText inputMessage value =
     div [ class "field" ]
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
-            [ input [ class "input", type_ "text", placeholder placeholderText, onInput inputMessage ]
-                []
+            [ Text.input
+                (Text.defaultOptions inputMessage)
+                [ class "input", type_ "text", placeholder placeholderText ]
+                value
             ]
         ]
 
@@ -245,14 +282,14 @@ drawNumericalList list =
 
 
 createNumbers: ListItem -> Html Msg
-createNumbers list =
+createNumbers listItem =
     div [ class "field" ]
         [ label [ class "label" ]
-            [ text list.name ]
+            [ text listItem.name ]
         , div [ class "control" ]
         [
         Number.input
-                { onInput = ChangeListItem
+                { onInput = ChangeActsList list listItem.name
                 , maxLength = Nothing
                 , maxValue = Just 100
                 , minValue = Just 0,
@@ -260,7 +297,7 @@ createNumbers list =
                 }
                 [ class "input"
                 ]
-                list.value
+                listItem.value
             ]
         ]
 
@@ -293,15 +330,15 @@ pageBaseproperties : Model -> Html Msg
 pageBaseproperties model =
     div [ class "container" ]
         [ 
-        addInput model "Vorname" "Der Vorname deines Characters" ChangeFirstname
-        , addInput model "Name" "Der Nachname deines Characters" ChangeName
-        , addInput model "Statur" "Die Statur deines Characters" ChangeStature
-        , addInput model "Religion" "Deine Religion" ChangeReligion
-        , addInput model "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex
-        , addInput model "Alter" "Wie alt bist du?" ChangeAge
+        addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName
+        , addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
+        , addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature
+        , addInput "Religion" "Deine Religion" ChangeReligion model.character.religion
+        , addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
+        , addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age
         , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
-        , addInput model "Beruf" "Dein Beruf" ChangeJob
-        , addInput model "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus
+        , addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
+        , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
         , (nextButton model PageBaseProperties PageSkillpoints)
         ]
 
@@ -336,23 +373,23 @@ characterSheet model =
         ]
         , div [ class "columns"] [
             div [ class "column" ] [
-                showReadonlyValue model.character.firstName "Vorname"
-                ,showReadonlyValue model.character.sex "Geschlecht"
+                addInput "Vorname" "" ChangeFirstname model.character.firstName
+                ,addInput "Geschlecht" "" ChangeSex model.character.sex
             ]
             , div [ class "column" ] [
-                showReadonlyValue model.character.name "Name"
-                ,showReadonlyValue model.character.age "Alter"
+                addInput "Name" "" ChangeSex model.character.name
+                ,addInput "Alter" "" ChangeSex model.character.age
             ]
             , div [ class "column" ] [
                 img [src model.character.picture] []
             ]
             , div [ class "column" ] [
-                showReadonlyValue model.character.stature "Statur"
-                , showReadonlyValue model.character.job "Beruf"
+                addInput "Statur" "" ChangeSex model.character.stature
+                , addInput "Beruf" "" ChangeSex model.character.job
             ]
             , div [ class "column" ] [
-                showReadonlyValue model.character.religion "Religion"
-                , showReadonlyValue model.character.familyStatus "Familienstand"
+                addInput "Religion" "" ChangeSex model.character.religion
+                , addInput "Familienstand" "" ChangeSex model.character.familyStatus
             ]
         ]
         , div [ class "columns"] [
@@ -387,16 +424,6 @@ characterSheet model =
         , (nextButton model PageSkillpoints CharacterSheet)
         ]
 
-showReadonlyValue: String -> String -> Html Msg
-showReadonlyValue value title =
-    div [ class "field" ]
-        [ label [ class "label" ]
-            [ text title ]
-        , div [ class "control" ]
-            [ input [ class "input", type_ "text", disabled True, readonly True]
-                [ text value ]
-            ]
-        ]
 
 
 showReadonlyListItemValue listItem title =
