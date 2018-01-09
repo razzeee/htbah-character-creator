@@ -7,8 +7,11 @@ import Input.Number as Number
 import Input.Text as Text
 import List.Extra exposing (..)
 
+
 main =
     Html.program { init = init, view = view, update = update, subscriptions = always Sub.none }
+
+
 
 -- MODEL
 
@@ -27,11 +30,13 @@ type Page
     | PageSkillpoints
     | PageCharacterSheet
 
+
 type alias ListItem =
-    {
-    name : String,
-    value : Maybe Int,
-    masterItem : Bool}
+    { name : String
+    , value : Maybe Int
+    , masterItem : Bool
+    }
+
 
 type alias Character =
     { name : String
@@ -43,18 +48,39 @@ type alias Character =
     , job : String
     , familyStatus : String
     , lifePoints : Maybe Int
-    , knowledgeList : List  ListItem
-    , interactList : List  ListItem
+    , knowledgeList : List ListItem
+    , interactList : List ListItem
     , actsList : List ListItem
     , unassignedPoints : String
     , picture : String
     }
 
-init : (Model, Cmd Msg)
+
+init : ( Model, Cmd Msg )
 init =
-    (Model (Character "" "" "" "" "" "" "" "" (Just 100) 
-    [(ListItem "Wissen" (Just 0) True)] [(ListItem "Interagieren" (Just 0) True)] [(ListItem "Handeln" (Just 0) True)] 
-    "500" "img/character.jpg") PageBaseProperties "" "" "", Cmd.none)
+    ( Model
+        (Character ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            (Just 100)
+            [ (ListItem "Wissen" (Just 0) True) ]
+            [ (ListItem "Interagieren" (Just 0) True) ]
+            [ (ListItem "Handeln" (Just 0) True) ]
+            "500"
+            "img/character.jpg"
+        )
+        PageBaseProperties
+        ""
+        ""
+        ""
+    , Cmd.none
+    )
+
 
 
 -- UPDATE
@@ -85,6 +111,7 @@ type Msg
     | InputNewItemInteract String
     | ChangeInteractAddNewItem
 
+
 update msg model =
     case msg of
         ChangeName name ->
@@ -92,164 +119,168 @@ update msg model =
                 character =
                     model.character
             in
-                ({ model | character = { character | name = name } }, Cmd.none)
+                ( { model | character = { character | name = name } }, Cmd.none )
 
         ChangeFirstname firstName ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | firstName = firstName } }, Cmd.none)
+                ( { model | character = { character | firstName = firstName } }, Cmd.none )
 
         ChangeStature stature ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | stature = stature } }, Cmd.none)
+                ( { model | character = { character | stature = stature } }, Cmd.none )
 
         ChangeReligion religion ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | religion = religion } }, Cmd.none)
+                ( { model | character = { character | religion = religion } }, Cmd.none )
 
         ChangeSex sex ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | sex = sex } }, Cmd.none)
+                ( { model | character = { character | sex = sex } }, Cmd.none )
 
         ChangeAge age ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | age = age } }, Cmd.none)
+                ( { model | character = { character | age = age } }, Cmd.none )
 
         ChangeJob job ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | job = job } }, Cmd.none)
+                ( { model | character = { character | job = job } }, Cmd.none )
 
         ChangeFamilystatus familyStatus ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | familyStatus = familyStatus } }, Cmd.none)
+                ( { model | character = { character | familyStatus = familyStatus } }, Cmd.none )
 
         ChangeLifepoints lifePoints ->
             let
                 character =
                     model.character
             in
-                ({ model | character = { character | lifePoints = lifePoints } }, Cmd.none)
+                ( { model | character = { character | lifePoints = lifePoints } }, Cmd.none )
 
         ChangeActsList name value ->
             let
                 character =
                     model.character
 
-                actsListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.actsList
+                actsListNew =
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.actsList
             in
-                ({ model | character = { character | actsList = actsListNew } }, Cmd.none)
-
+                ( { model | character = { character | actsList = actsListNew } }, Cmd.none )
 
         ChangeKnowledgeList name value ->
             let
                 character =
                     model.character
 
-                knowledgeListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.knowledgeList
-
+                knowledgeListNew =
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.knowledgeList
             in
-                ({ model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none)
-
+                ( { model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none )
 
         ChangeInteractList name value ->
             let
                 character =
                     model.character
 
-                interactListNew = List.Extra.updateIf (\value -> value.name == name) (\input -> {input | value = value}) model.character.interactList
+                interactListNew =
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.interactList
             in
-                ({ model | character = { character | interactList = interactListNew } }, Cmd.none)
+                ( { model | character = { character | interactList = interactListNew } }, Cmd.none )
 
         ChangeActsListRemoveItem name ->
             let
                 character =
                     model.character
 
-                actsListNew = List.filter (\value -> value.name /= name) model.character.actsList
+                actsListNew =
+                    List.filter (\value -> value.name /= name) model.character.actsList
             in
-                ({ model | character = { character | actsList = actsListNew } }, Cmd.none)
-
+                ( { model | character = { character | actsList = actsListNew } }, Cmd.none )
 
         ChangeKnowledgeListRemoveItem name ->
             let
                 character =
                     model.character
 
-                knowledgeListNew = List.filter (\value -> value.name /= name) model.character.knowledgeList
+                knowledgeListNew =
+                    List.filter (\value -> value.name /= name) model.character.knowledgeList
             in
-                ({ model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none)
+                ( { model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none )
 
         ChangeInteractListRemoveItem name ->
             let
                 character =
                     model.character
 
-                interactListNew = List.filter (\value -> value.name /= name) model.character.interactList
+                interactListNew =
+                    List.filter (\value -> value.name /= name) model.character.interactList
             in
-                ({ model | character = { character | interactList = interactListNew } }, Cmd.none)
+                ( { model | character = { character | interactList = interactListNew } }, Cmd.none )
 
         ChangeActsAddNewItem ->
-                let
+            let
                 character =
                     model.character
 
-                newList = List.append model.character.actsList [(ListItem model.inputNewActsItem (Just 0) False)]
+                newList =
+                    List.append model.character.actsList [ (ListItem model.inputNewActsItem (Just 0) False) ]
             in
-                ({ model | character = { character | actsList = newList } }, Cmd.none)
-        
+                ( { model | character = { character | actsList = newList } }, Cmd.none )
+
         InputNewItemActs value ->
-            ({ model | inputNewActsItem = value }, Cmd.none)
+            ( { model | inputNewActsItem = value }, Cmd.none )
 
         ChangeKnowledgeAddNewItem ->
-                let
+            let
                 character =
                     model.character
 
-                newList = List.append model.character.knowledgeList [(ListItem model.inputNewKnowledgeItem (Just 0) False)]
+                newList =
+                    List.append model.character.knowledgeList [ (ListItem model.inputNewKnowledgeItem (Just 0) False) ]
             in
-                ({ model | character = { character | knowledgeList = newList } }, Cmd.none)
-        
+                ( { model | character = { character | knowledgeList = newList } }, Cmd.none )
+
         InputNewItemKnowledge value ->
-            ({ model | inputNewKnowledgeItem = value }, Cmd.none)
+            ( { model | inputNewKnowledgeItem = value }, Cmd.none )
 
         ChangeInteractAddNewItem ->
-                let
+            let
                 character =
                     model.character
 
-                newList = List.append model.character.interactList [(ListItem model.inputNewInteractItem (Just 0) False)]
+                newList =
+                    List.append model.character.interactList [ (ListItem model.inputNewInteractItem (Just 0) False) ]
             in
-                ({ model | character = { character | interactList = newList } }, Cmd.none)
-        
+                ( { model | character = { character | interactList = newList } }, Cmd.none )
+
         InputNewItemInteract value ->
-            ({ model | inputNewInteractItem = value }, Cmd.none)
+            ( { model | inputNewInteractItem = value }, Cmd.none )
 
         ChangePage newPage ->
-            ({ model | page = newPage }, Cmd.none)
+            ( { model | page = newPage }, Cmd.none )
 
         FocusChanged bool ->
-            (model, Cmd.none)
-
+            ( model, Cmd.none )
 
 
 
@@ -280,27 +311,27 @@ setTabActive model page =
 drawTabs : Model -> Html Msg
 drawTabs model =
     div [ class "hero-foot" ]
-    [  nav [ class "tabs is-boxed is-fullwidth" ]
-        [ div [ class "container" ]
-            [  ul []
-                [ li
-                [ setTabActive model PageBaseProperties
+        [ nav [ class "tabs is-boxed is-fullwidth" ]
+            [ div [ class "container" ]
+                [ ul []
+                    [ li
+                        [ setTabActive model PageBaseProperties
+                        ]
+                        [ a []
+                            [ text "Basiseigenschaften" ]
+                        ]
+                    , li [ setTabActive model PageSkillpoints ]
+                        [ a []
+                            [ text "Skillpunkte" ]
+                        ]
+                    , li [ setTabActive model PageCharacterSheet ]
+                        [ a []
+                            [ text "Character-Blatt" ]
+                        ]
+                    ]
                 ]
-                [ a []
-                    [ text "Basiseigenschaften" ]
-                ]
-            , li [ setTabActive model PageSkillpoints ]
-                [ a []
-                    [ text "Skillpunkte" ]
-                ]
-            , li [ setTabActive model PageCharacterSheet ]
-                [ a []
-                    [ text "Character-Blatt" ]
-                ]
-            ] 
-            ] 
-        ] 
-    ]
+            ]
+        ]
 
 
 nextButton : Model -> Maybe Page -> Maybe Page -> Html Msg
@@ -313,17 +344,18 @@ nextButton model previousPage nextPage =
 
                 Just value ->
                     (button [ class "button is-link", onClick (ChangePage value) ]
-                    [ text "Vorherige" ])
-
-            ],
-            div [ class "control" ]
+                        [ text "Vorherige" ]
+                    )
+            ]
+        , div [ class "control" ]
             [ case nextPage of
                 Nothing ->
                     (div [] [])
 
                 Just value ->
                     (button [ class "button is-link", onClick (ChangePage value) ]
-                    [ text "Nächste" ])
+                        [ text "Nächste" ]
+                    )
             ]
         ]
 
@@ -340,6 +372,7 @@ addInput title placeholderText inputMessage value =
             ]
         ]
 
+
 addInputNumerical value title inputMessage =
     div [ class "field" ]
         [ label [ class "label" ]
@@ -349,8 +382,8 @@ addInputNumerical value title inputMessage =
                 { onInput = inputMessage
                 , maxLength = Nothing
                 , maxValue = Just 100
-                , minValue = Just 0,
-                hasFocus = Just FocusChanged
+                , minValue = Just 0
+                , hasFocus = Just FocusChanged
                 }
                 [ class "input"
                 ]
@@ -360,121 +393,125 @@ addInputNumerical value title inputMessage =
 
 
 drawActsList list =
-    div [ class "column"]
-         (List.map createActsNumbers list)
+    div [ class "column" ]
+        (List.map createActsNumbers list)
 
 
 drawKnowledgeList list =
-    div [ class "column"]
-         (List.map createKnowledgeNumbers list)
+    div [ class "column" ]
+        (List.map createKnowledgeNumbers list)
 
 
 drawInteractList list =
-    div [ class "column"]
-         (List.map createInteractNumbers list)
+    div [ class "column" ]
+        (List.map createInteractNumbers list)
+
 
 createActsNumbers listItem =
-    div [] [
-        label [ class "label" ]
+    div []
+        [ label [ class "label" ]
             [ text listItem.name ]
-        , 
-    div [ class "field has-addons" ]
-        [ div [ class "control" ]
-        [
-        Number.input
-                { onInput = ChangeActsList listItem.name
-                , maxLength = Nothing
-                , maxValue = Just 100
-                , minValue = Just 0,
-                hasFocus = Just FocusChanged
-                }
-                [ class "input"
+        , div [ class "field has-addons" ]
+            [ div [ class "control" ]
+                [ Number.input
+                    { onInput = ChangeActsList listItem.name
+                    , maxLength = Nothing
+                    , maxValue = Just 100
+                    , minValue = Just 0
+                    , hasFocus = Just FocusChanged
+                    }
+                    [ class "input"
+                    ]
+                    listItem.value
                 ]
-                listItem.value
+            , if not listItem.masterItem then
+                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeActsListRemoveItem listItem.name) ] [ text "X" ] ]
+              else
+                div [ class "control" ] []
             ]
-        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeActsListRemoveItem listItem.name)] [text "X"]]
-        else  div [class "control"] []
         ]
-    ]
+
 
 createKnowledgeNumbers listItem =
-    div [] [
-        label [ class "label" ]
+    div []
+        [ label [ class "label" ]
             [ text listItem.name ]
-        , 
-    div [ class "field has-addons" ]
-        [ div [ class "control" ]
-        [
-        Number.input
-                { onInput = ChangeKnowledgeList listItem.name
-                , maxLength = Nothing
-                , maxValue = Just 100
-                , minValue = Just 0,
-                hasFocus = Just FocusChanged
-                }
-                [ class "input"
+        , div [ class "field has-addons" ]
+            [ div [ class "control" ]
+                [ Number.input
+                    { onInput = ChangeKnowledgeList listItem.name
+                    , maxLength = Nothing
+                    , maxValue = Just 100
+                    , minValue = Just 0
+                    , hasFocus = Just FocusChanged
+                    }
+                    [ class "input"
+                    ]
+                    listItem.value
                 ]
-                listItem.value
+            , if not listItem.masterItem then
+                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name) ] [ text "X" ] ]
+              else
+                div [ class "control" ] []
             ]
-        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name)] [text "X"]]
-        else  div [class "control"] []
         ]
-    ]
+
 
 createInteractNumbers listItem =
-    div [] [
-        label [ class "label" ]
+    div []
+        [ label [ class "label" ]
             [ text listItem.name ]
-        , 
-    div [ class "field has-addons" ]
-        [ div [ class "control" ]
-        [
-        Number.input
-                { onInput = ChangeInteractList listItem.name
-                , maxLength = Nothing
-                , maxValue = Just 100
-                , minValue = Just 0,
-                hasFocus = Just FocusChanged
-                }
-                [ class "input"
+        , div [ class "field has-addons" ]
+            [ div [ class "control" ]
+                [ Number.input
+                    { onInput = ChangeInteractList listItem.name
+                    , maxLength = Nothing
+                    , maxValue = Just 100
+                    , minValue = Just 0
+                    , hasFocus = Just FocusChanged
+                    }
+                    [ class "input"
+                    ]
+                    listItem.value
                 ]
-                listItem.value
+            , if not listItem.masterItem then
+                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name) ] [ text "X" ] ]
+              else
+                div [ class "control" ] []
             ]
-        , if not listItem.masterItem then div [class "control"] [a [class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name)] [text "X"]]
-        else  div [class "control"] []
         ]
-    ]
+
 
 renderContent page model =
-    div [] 
-    [section [ class "hero is-primary" ]
-    [  div [ class "hero-body" ]
-        [  div [ class "container" ]
-            [  h1 [ class "title" ]
-                [ text "How to be a hero" ] 
-            , h2 [ class "subtitle" ]
-                [ text "Characterblatt-Ersteller" ] 
-            ] 
-        ],
-        drawTabs model
-    ],
-        page model,
-        footer [ class "footer" ]
-    [ div [ class "container" ]
-        [ div [ class "content has-text-centered" ]
-            [ p []
-                [ text "How to be a hero character sheet creator by Kolja Lampe. The source code is licensed MIT."
+    div []
+        [ section [ class "hero is-primary" ]
+            [ div [ class "hero-body" ]
+                [ div [ class "container" ]
+                    [ h1 [ class "title" ]
+                        [ text "How to be a hero" ]
+                    , h2 [ class "subtitle" ]
+                        [ text "Characterblatt-Ersteller" ]
+                    ]
+                ]
+            , drawTabs model
+            ]
+        , page model
+        , footer [ class "footer" ]
+            [ div [ class "container" ]
+                [ div [ class "content has-text-centered" ]
+                    [ p []
+                        [ text "How to be a hero character sheet creator by Kolja Lampe. The source code is licensed MIT."
+                        ]
+                    ]
                 ]
             ]
         ]
-    ]
-    ]
+
 
 pageBaseproperties : Model -> Html Msg
 pageBaseproperties model =
     div [ class "container" ]
-        [ 
-        addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName
+        [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName
         , addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
         , addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature
         , addInput "Religion" "Deine Religion" ChangeReligion model.character.religion
@@ -486,28 +523,28 @@ pageBaseproperties model =
         , (nextButton model Nothing (Just PageSkillpoints))
         ]
 
+
 pageSkillpoints : Model -> Html Msg
 pageSkillpoints model =
     div [ class "container" ]
-        [ 
-             div [ class "field" ]
-        [ label [ class "label has-text-centered" ]
-            [ text "Verbleibende Skillpunkte" ]
-        , div [ class "control" ]
-            [ input [ class "input is-large has-text-centered is-static", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
-                []
+        [ div [ class "field" ]
+            [ label [ class "label has-text-centered" ]
+                [ text "Verbleibende Skillpunkte" ]
+            , div [ class "control" ]
+                [ input [ class "input is-large has-text-centered is-static", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
+                    []
+                ]
             ]
-        ]
-        , div [ class "columns"] [
-        drawActsList model.character.actsList
-        , drawKnowledgeList model.character.knowledgeList
-        , drawInteractList model.character.interactList
-        ]
-        , div [ class "columns"] [
-        renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
-        , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem
-        , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem
-        ]
+        , div [ class "columns" ]
+            [ drawActsList model.character.actsList
+            , drawKnowledgeList model.character.knowledgeList
+            , drawInteractList model.character.interactList
+            ]
+        , div [ class "columns" ]
+            [ renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
+            , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem
+            , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem
+            ]
         , (nextButton model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
 
@@ -515,64 +552,62 @@ pageSkillpoints model =
 pagecharacterSheet : Model -> Html Msg
 pagecharacterSheet model =
     div [ class "container" ]
-        [ 
-             div [ class "field" ]
-        [ label [ class "label has-text-centered" ]
-            [ text "Charakterbogen" ]
-        ]
-        , div [ class "columns"] [
-            div [ class "column" ] [
-                addInput "Vorname" "" ChangeFirstname model.character.firstName
-                ,addInput "Geschlecht" "" ChangeSex model.character.sex
+        [ div [ class "field" ]
+            [ label [ class "label has-text-centered" ]
+                [ text "Charakterbogen" ]
             ]
-            , div [ class "column" ] [
-                addInput "Name" "" ChangeSex model.character.name
-                ,addInput "Alter" "" ChangeSex model.character.age
-            ]
-            , div [ class "column" ] [
-                img [src model.character.picture] []
-            ]
-            , div [ class "column" ] [
-                addInput "Statur" "" ChangeSex model.character.stature
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ addInput "Vorname" "" ChangeFirstname model.character.firstName
+                , addInput "Geschlecht" "" ChangeSex model.character.sex
+                ]
+            , div [ class "column" ]
+                [ addInput "Name" "" ChangeSex model.character.name
+                , addInput "Alter" "" ChangeSex model.character.age
+                ]
+            , div [ class "column" ]
+                [ img [ src model.character.picture ] []
+                ]
+            , div [ class "column" ]
+                [ addInput "Statur" "" ChangeSex model.character.stature
                 , addInput "Beruf" "" ChangeSex model.character.job
-            ]
-            , div [ class "column" ] [
-                addInput "Religion" "" ChangeSex model.character.religion
+                ]
+            , div [ class "column" ]
+                [ addInput "Religion" "" ChangeSex model.character.religion
                 , addInput "Familienstand" "" ChangeSex model.character.familyStatus
+                ]
             ]
-        ]
-        , div [ class "columns"] [
-            div [ class "column" ] [
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                []
+            , div [ class "column" ]
+                []
+            , div [ class "column" ]
+                [ showReadonlyLifepoints model.character.lifePoints "Lebenspunkte"
+                ]
+            , div [ class "column" ]
+                []
+            , div [ class "column" ]
+                []
             ]
-            , div [ class "column" ] [
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.actsList) "Handeln"
+                ]
+            , div [ class "column" ]
+                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.knowledgeList) "Wissen"
+                ]
+            , div [ class "column" ]
+                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.interactList) "Interagieren"
+                ]
             ]
-            , div [ class "column" ] [
-                showReadonlyLifepoints model.character.lifePoints "Lebenspunkte"
-            ]
-            , div [ class "column" ] [
-            ]
-            , div [ class "column" ] [
-            ]
-        ]
-        , div [ class "columns"] [
-            div [ class "column" ] [
-                showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.actsList) "Handeln"
-            ]
-            , div [ class "column" ] [
-                showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.knowledgeList) "Wissen"
-            ]
-            , div [ class "column" ] [
-                showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.interactList) "Interagieren"
-            ]
-        ]
-        , div [ class "columns"] [
-            div [ class "column" ] []
+        , div [ class "columns" ]
+            [ div [ class "column" ] []
             , div [ class "column" ] []
             , div [ class "column" ] []
-        ]
+            ]
         , (nextButton model (Just PageSkillpoints) Nothing)
         ]
-
 
 
 showReadonlyListItemValue listItem title =
@@ -582,21 +617,23 @@ showReadonlyListItemValue listItem title =
                 [ label [ class "label" ]
                     [ text title ]
                 , div [ class "control" ]
-                    [ input [ class "input", type_ "text", disabled True, readonly True]
+                    [ input [ class "input", type_ "text", disabled True, readonly True ]
                         [ text "" ]
                     ]
                 ]
+
         Just value ->
             div [ class "field" ]
                 [ label [ class "label" ]
                     [ text title ]
                 , div [ class "control" ]
-                    [ input [ class "input", type_ "text", disabled True, readonly True]
+                    [ input [ class "input", type_ "text", disabled True, readonly True ]
                         [ text (convertMaybeIntToString value.value) ]
                     ]
                 ]
 
-showReadonlyLifepoints: Maybe Int -> String -> Html Msg
+
+showReadonlyLifepoints : Maybe Int -> String -> Html Msg
 showReadonlyLifepoints value title =
     div [ class "field" ]
         [ label [ class "label" ]
@@ -606,35 +643,39 @@ showReadonlyLifepoints value title =
                 { onInput = ChangeLifepoints
                 , maxLength = Nothing
                 , maxValue = Just 100
-                , minValue = Just 0,
-                hasFocus = Just FocusChanged
+                , minValue = Just 0
+                , hasFocus = Just FocusChanged
                 }
-                [ class "input", disabled True, readonly True
+                [ class "input"
+                , disabled True
+                , readonly True
                 ]
                 value
             ]
         ]
-    
+
+
 convertMaybeIntToString input =
     case input of
         Nothing ->
-        "0"
+            "0"
+
         Just value ->
-        toString value
+            toString value
+
 
 renderInputForNewItem value inputEvent onClickEvent =
-        div [class "column"] [
-            div [ class "field has-addons" ]
-                [ div [ class "control" ]
-                    [ Text.input
-                        (Text.defaultOptions inputEvent)
-                        [ class "input", type_ "text", placeholder "Neuer Wert" ]
-                        value
-                    ]
-                , div [ class "control" ] 
-                [
-                    button [ class "button is-info", onClick onClickEvent ] 
-                    [i [ class "fa fa-plus" ] []]
+    div [ class "column" ]
+        [ div [ class "field has-addons" ]
+            [ div [ class "control" ]
+                [ Text.input
+                    (Text.defaultOptions inputEvent)
+                    [ class "input", type_ "text", placeholder "Neuer Wert" ]
+                    value
+                ]
+            , div [ class "control" ]
+                [ button [ class "button is-info", onClick onClickEvent ]
+                    [ i [ class "fa fa-plus" ] [] ]
                 ]
             ]
         ]
