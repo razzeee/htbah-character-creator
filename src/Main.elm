@@ -51,7 +51,8 @@ type alias Character =
     , knowledgeList : List ListItem
     , interactList : List ListItem
     , actsList : List ListItem
-    , unassignedPoints : String
+    , assignedSkillpoints : Int
+    , spendableSkillpoints : Int
     , picture : String
     }
 
@@ -71,7 +72,8 @@ init =
             [ (ListItem "Wissen" (Just 0) True) ]
             [ (ListItem "Interagieren" (Just 0) True) ]
             [ (ListItem "Handeln" (Just 0) True) ]
-            "500"
+            0
+            500
             "img/character.jpg"
         )
         PageBaseProperties
@@ -182,10 +184,25 @@ update msg model =
                 character =
                     model.character
 
+                filteredList = List.filter (\value -> value.name /= name) character.actsList
+                valuesToSum = List.map .value character.actsList
+                
+                sum = List.sum valuesToSum
+                sumAndValue = sum + convertMaybeIntToInt value
+
+                assignedSkillpointsNew =
+                if sumAndValue < 500 then
+                    sumAndValue
+                else
+                    character.assignedSkillpoints
+
                 actsListNew =
-                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.actsList
+                if sumAndValue < 500 then
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) character.actsList
+                else
+                    model.character.actsList
             in
-                ( { model | character = { character | actsList = actsListNew } }, Cmd.none )
+                ( { model | character = { character | actsList = actsListNew, assignedSkillpoints = sumAndValue } }, Cmd.none )
 
         ChangeKnowledgeList name value ->
             let
@@ -281,6 +298,7 @@ update msg model =
 
         FocusChanged bool ->
             ( model, Cmd.none )
+
 
 
 
@@ -523,6 +541,9 @@ pageBaseproperties model =
         , (nextButton model Nothing (Just PageSkillpoints))
         ]
 
+remainingSkillpoints model =
+    toString (model.character.spendableSkillpoints - model.character.assignedSkillpoints)
+
 
 pageSkillpoints : Model -> Html Msg
 pageSkillpoints model =
@@ -531,7 +552,7 @@ pageSkillpoints model =
             [ label [ class "label has-text-centered" ]
                 [ text "Verbleibende Skillpunkte" ]
             , div [ class "control" ]
-                [ input [ class "input is-large has-text-centered is-static", type_ "text", value model.character.unassignedPoints, readonly True, disabled True ]
+                [ input [ class "input is-large has-text-centered is-static", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
                     []
                 ]
             ]
@@ -663,6 +684,13 @@ convertMaybeIntToString input =
         Just value ->
             toString value
 
+convertMaybeIntToInt input =
+    case input of
+        Nothing ->
+            0
+
+        Just value ->
+            value
 
 renderInputForNewItem value inputEvent onClickEvent =
     div [ class "column" ]
