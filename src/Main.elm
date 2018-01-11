@@ -47,18 +47,17 @@ type alias Character =
     { name : String
     , firstName : String
     , stature : String
+    , primaryLanguage : String
     , religion : String
     , sex : String
     , age : String
     , job : String
     , familyStatus : String
     , lifePoints : Maybe Int
+    , skillList : List ListItem
     , knowledge: Maybe Int
-    , knowledgeList : List ListItem
     , interact : Maybe Int
-    , interactList : List ListItem
     , acts : Maybe Int
-    , actsList : List ListItem
     , assignedSkillpoints : Int
     , spendableSkillpoints : Int
     , picture : String
@@ -76,13 +75,12 @@ init =
             ""
             ""
             ""
+            ""
             (Just 100)
+            []
             (Just 0)
-            [ (ListItem "Wissen" (Just 0) Knowledge) ]
             (Just 0)
-            [ (ListItem "Interagieren" (Just 0) Interact) ]
             (Just 0)
-            [ (ListItem "Handeln" (Just 0) Acts) ]
             0
             500
             "img/character.jpg"
@@ -111,12 +109,8 @@ type Msg
     | ChangeLifepoints (Maybe Int)
     | ChangePage Page
     | FocusChanged Bool
-    | ChangeActsList String (Maybe Int)
-    | ChangeKnowledgeList String (Maybe Int)
-    | ChangeInteractList String (Maybe Int)
-    | ChangeActsListRemoveItem String
-    | ChangeKnowledgeListRemoveItem String
-    | ChangeInteractListRemoveItem String
+    | ChangeSkillList String (Maybe Int)
+    | ChangeSkillListRemoveItem String
     | InputNewItemActs String
     | ChangeActsAddNewItem
     | InputNewItemKnowledge String
@@ -190,83 +184,31 @@ update msg model =
             in
                 ( { model | character = { character | lifePoints = lifePoints } }, Cmd.none )
 
-        ChangeActsList name value ->
+        ChangeSkillList name value ->
             let
                 character =
                     model.character
                 
-                filteredList = List.filter (\value -> value.name /= name) character.actsList
+                filteredList = List.filter (\value -> value.name /= name) character.skillList
                 valuesToSum = List.map .value filteredList
                 valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
                 summedValues = List.sum valuesConvertedToInt
                 sumAndCurrentValue = summedValues + convertMaybeIntToInt value
 
-                actsListNew =
-                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.actsList
+                skillListNew =
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.skillList
             in
-                ( { model | character = { character | actsList = actsListNew, assignedSkillpoints = sumAndCurrentValue } }, Cmd.none )
+                ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue } }, Cmd.none )
 
-        ChangeKnowledgeList name value ->
+        ChangeSkillListRemoveItem name ->
             let
                 character =
                     model.character
 
-                filteredList = List.filter (\value -> value.name /= name) character.knowledgeList
-                valuesToSum = List.map .value filteredList
-                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
-                summedValues = List.sum valuesConvertedToInt
-                sumAndCurrentValue = summedValues + convertMaybeIntToInt value
-
-                knowledgeListNew =
-                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.knowledgeList
+                skillListNew =
+                    List.filter (\value -> value.name /= name) model.character.skillList
             in
-                ( { model | character = { character | knowledgeList = knowledgeListNew, assignedSkillpoints = sumAndCurrentValue  } }, Cmd.none )
-
-        ChangeInteractList name value ->
-            let
-                character =
-                    model.character
-
-                filteredList = List.filter (\value -> value.name /= name) character.interactList
-                valuesToSum = List.map .value filteredList
-                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
-                summedValues = List.sum valuesConvertedToInt
-                sumAndCurrentValue = summedValues + convertMaybeIntToInt value
-
-                interactListNew =
-                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.interactList
-            in
-                ( { model | character = { character | interactList = interactListNew, assignedSkillpoints = sumAndCurrentValue  } }, Cmd.none )
-
-        ChangeActsListRemoveItem name ->
-            let
-                character =
-                    model.character
-
-                actsListNew =
-                    List.filter (\value -> value.name /= name) model.character.actsList
-            in
-                ( { model | character = { character | actsList = actsListNew } }, Cmd.none )
-
-        ChangeKnowledgeListRemoveItem name ->
-            let
-                character =
-                    model.character
-
-                knowledgeListNew =
-                    List.filter (\value -> value.name /= name) model.character.knowledgeList
-            in
-                ( { model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none )
-
-        ChangeInteractListRemoveItem name ->
-            let
-                character =
-                    model.character
-
-                interactListNew =
-                    List.filter (\value -> value.name /= name) model.character.interactList
-            in
-                ( { model | character = { character | interactList = interactListNew } }, Cmd.none )
+                ( { model | character = { character | skillList = skillListNew } }, Cmd.none )
 
         ChangeActsAddNewItem ->
             let
@@ -274,9 +216,18 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.actsList [ (ListItem model.inputNewActsItem (Just 0) Acts) ]
+                if String.trim model.inputNewActsItem /= "" then
+                    List.append model.character.skillList [ (ListItem model.inputNewActsItem (Just 0) Acts) ]
+                else
+                    model.character.skillList
+
+                newInputItem =
+                if String.trim model.inputNewActsItem /= "" then
+                    ""
+                else
+                    model.inputNewActsItem
             in
-                ( { model | character = { character | actsList = newList }, inputNewActsItem = "" }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem }, Cmd.none )
 
         InputNewItemActs value ->
             ( { model | inputNewActsItem = value }, Cmd.none )
@@ -287,9 +238,18 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.knowledgeList [ (ListItem model.inputNewKnowledgeItem (Just 0) Knowledge) ]
+                if String.trim model.inputNewKnowledgeItem /= "" then
+                    List.append model.character.skillList [ (ListItem model.inputNewKnowledgeItem (Just 0) Knowledge) ]
+                else
+                    model.character.skillList
+
+                newInputItem =
+                if String.trim model.inputNewKnowledgeItem /= "" then
+                    ""
+                else
+                    model.inputNewKnowledgeItem
             in
-                ( { model | character = { character | knowledgeList = newList }, inputNewKnowledgeItem = "" }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem }, Cmd.none )
 
         InputNewItemKnowledge value ->
             ( { model | inputNewKnowledgeItem = value }, Cmd.none )
@@ -300,9 +260,18 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.interactList [ (ListItem model.inputNewInteractItem (Just 0) Interact) ]
+                if String.trim model.inputNewInteractItem /= "" then
+                    List.append model.character.skillList [ (ListItem model.inputNewInteractItem (Just 0) Interact) ]
+                else
+                    model.character.skillList
+
+                newInputItem =
+                if String.trim model.inputNewInteractItem /= "" then
+                    ""
+                else
+                    model.inputNewInteractItem
             in
-                ( { model | character = { character | interactList = newList }, inputNewInteractItem = "" }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem }, Cmd.none )
 
         InputNewItemInteract value ->
             ( { model | inputNewInteractItem = value }, Cmd.none )
@@ -426,17 +395,20 @@ addInputNumerical value title inputMessage =
 
 drawActsList list =
     div [ class "column" ]
-        (List.map createActsNumbers list)
+        (List.filter (\item -> item.itemType == Acts) list 
+        |> (List.map createActsNumbers ))
 
 
 drawKnowledgeList list =
     div [ class "column" ]
-        (List.map createKnowledgeNumbers list)
+        (List.filter (\item -> item.itemType == Knowledge) list 
+        |> (List.map createKnowledgeNumbers ))
 
 
 drawInteractList list =
     div [ class "column" ]
-        (List.map createInteractNumbers list)
+        (List.filter (\item -> item.itemType == Interact) list 
+        |> (List.map createInteractNumbers ))
 
 
 createActsNumbers listItem =
@@ -446,7 +418,7 @@ createActsNumbers listItem =
         , div [ class "field has-addons" ]
             [ div [ class "control" ]
                 [ Number.input
-                    { onInput = ChangeActsList listItem.name
+                    { onInput = ChangeSkillList listItem.name
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
@@ -457,7 +429,7 @@ createActsNumbers listItem =
                     listItem.value
                 ]
             , 
-                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeActsListRemoveItem listItem.name) ] [ text "X" ] ]
+                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
             ]
         ]
 
@@ -469,7 +441,7 @@ createKnowledgeNumbers listItem =
         , div [ class "field has-addons" ]
             [ div [ class "control" ]
                 [ Number.input
-                    { onInput = ChangeKnowledgeList listItem.name
+                    { onInput = ChangeSkillList listItem.name
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
@@ -479,7 +451,7 @@ createKnowledgeNumbers listItem =
                     ]
                     listItem.value
                 ]
-               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name) ] [ text "X" ] ]
+               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
 
             ]
         ]
@@ -492,7 +464,7 @@ createInteractNumbers listItem =
         , div [ class "field has-addons" ]
             [ div [ class "control" ]
                 [ Number.input
-                    { onInput = ChangeInteractList listItem.name
+                    { onInput = ChangeSkillList listItem.name
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
@@ -502,7 +474,7 @@ createInteractNumbers listItem =
                     ]
                     listItem.value
                 ]
-               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name) ] [ text "X" ] ]
+               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
             ]
         ]
 
@@ -539,6 +511,7 @@ pageBaseproperties model =
         [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName
         , addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
         , addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature
+        , addInput "Muttersprache" "Die Muttersprache deines Characters" ChangeStature model.character.primaryLanguage
         , addInput "Religion" "Deine Religion" ChangeReligion model.character.religion
         , addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
         , addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age
@@ -564,9 +537,9 @@ pageSkillpoints model =
                 ]
             ]
         , div [ class "columns" ]
-            [ drawActsList model.character.actsList
-            , drawKnowledgeList model.character.knowledgeList
-            , drawInteractList model.character.interactList
+            [ drawActsList model.character.skillList
+            , drawKnowledgeList model.character.skillList
+            , drawInteractList model.character.skillList
             ]
         , div [ class "columns" ]
             [ renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
@@ -705,7 +678,7 @@ renderInputForNewItem value inputEvent onClickEvent =
             [ div [ class "control" ]
                 [ Text.input
                     (Text.defaultOptions inputEvent)
-                    [ class "input", type_ "text", placeholder "Neuer Wert" ]
+                    [ class "input", type_ "text", placeholder "Neue Begabung" ]
                     value
                 ]
             , div [ class "control" ]
