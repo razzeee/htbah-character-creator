@@ -183,46 +183,49 @@ update msg model =
             let
                 character =
                     model.character
-
-                filteredList = List.filter (\value -> value.name /= name) character.actsList
-                valuesToSum = List.map .value character.actsList
                 
-                sum = List.sum valuesToSum
-                sumAndValue = sum + convertMaybeIntToInt value
-
-                assignedSkillpointsNew =
-                if sumAndValue < 500 then
-                    sumAndValue
-                else
-                    character.assignedSkillpoints
+                filteredList = List.filter (\value -> value.name /= name) character.actsList
+                valuesToSum = List.map .value filteredList
+                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
+                summedValues = List.sum valuesConvertedToInt
+                sumAndCurrentValue = summedValues + convertMaybeIntToInt value
 
                 actsListNew =
-                if sumAndValue < 500 then
-                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) character.actsList
-                else
-                    model.character.actsList
+                    List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.actsList
             in
-                ( { model | character = { character | actsList = actsListNew, assignedSkillpoints = sumAndValue } }, Cmd.none )
+                ( { model | character = { character | actsList = actsListNew, assignedSkillpoints = sumAndCurrentValue } }, Cmd.none )
 
         ChangeKnowledgeList name value ->
             let
                 character =
                     model.character
 
+                filteredList = List.filter (\value -> value.name /= name) character.knowledgeList
+                valuesToSum = List.map .value filteredList
+                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
+                summedValues = List.sum valuesConvertedToInt
+                sumAndCurrentValue = summedValues + convertMaybeIntToInt value
+
                 knowledgeListNew =
                     List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.knowledgeList
             in
-                ( { model | character = { character | knowledgeList = knowledgeListNew } }, Cmd.none )
+                ( { model | character = { character | knowledgeList = knowledgeListNew, assignedSkillpoints = sumAndCurrentValue  } }, Cmd.none )
 
         ChangeInteractList name value ->
             let
                 character =
                     model.character
 
+                filteredList = List.filter (\value -> value.name /= name) character.interactList
+                valuesToSum = List.map .value filteredList
+                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
+                summedValues = List.sum valuesConvertedToInt
+                sumAndCurrentValue = summedValues + convertMaybeIntToInt value
+
                 interactListNew =
                     List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.interactList
             in
-                ( { model | character = { character | interactList = interactListNew } }, Cmd.none )
+                ( { model | character = { character | interactList = interactListNew, assignedSkillpoints = sumAndCurrentValue  } }, Cmd.none )
 
         ChangeActsListRemoveItem name ->
             let
