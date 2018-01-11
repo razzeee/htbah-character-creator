@@ -53,7 +53,7 @@ type alias Character =
     , age : String
     , job : String
     , familyStatus : String
-    , lifePoints : Maybe Int
+    , lifePoints : String
     , skillList : List ListItem
     , knowledge: Maybe Int
     , interact : Maybe Int
@@ -76,7 +76,7 @@ init =
             ""
             ""
             ""
-            (Just 100)
+            "100"
             []
             (Just 0)
             (Just 0)
@@ -106,9 +106,8 @@ type Msg
     | ChangeAge String
     | ChangeJob String
     | ChangeFamilystatus String
-    | ChangeLifepoints (Maybe Int)
+    | ChangeLifepoints String
     | ChangePage Page
-    | FocusChanged Bool
     | ChangeSkillList String (Maybe Int)
     | ChangeSkillListRemoveItem String
     | InputNewItemActs String
@@ -117,6 +116,7 @@ type Msg
     | ChangeKnowledgeAddNewItem
     | InputNewItemInteract String
     | ChangeInteractAddNewItem
+    | Noop String
 
 
 update msg model =
@@ -179,6 +179,9 @@ update msg model =
 
         ChangeLifepoints lifePoints ->
             let
+                {-- 
+                Not Used only a dummy
+                --}
                 character =
                     model.character
             in
@@ -188,17 +191,29 @@ update msg model =
             let
                 character =
                     model.character
-                
-                filteredList = List.filter (\value -> value.name /= name) character.skillList
-                valuesToSum = List.map .value filteredList
-                valuesConvertedToInt = List.map convertMaybeIntToInt valuesToSum
-                summedValues = List.sum valuesConvertedToInt
+                {-- Total --}
+                summedValues = 
+                character.skillList
+                |> List.filter (\value -> value.name /= name) 
+                |> List.map .value
+                |> List.map convertMaybeIntToInt 
+                |> List.sum 
                 sumAndCurrentValue = summedValues + convertMaybeIntToInt value
+
+                {-- Acts --}
+                actsTotal = calculateTotal character Acts
+
+                {-- Knowledge --}
+                knowledgeTotal = calculateTotal character Knowledge
+
+                {-- Interact --}
+                interactTotal = calculateTotal character Interact
+
 
                 skillListNew =
                     List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.skillList
             in
-                ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue } }, Cmd.none )
+                ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue, acts = Just actsTotal, knowledge = Just knowledgeTotal, interact = Just interactTotal } }, Cmd.none )
 
         ChangeSkillListRemoveItem name ->
             let
@@ -278,12 +293,29 @@ update msg model =
 
         ChangePage newPage ->
             ( { model | page = newPage }, Cmd.none )
-
-        FocusChanged bool ->
+        
+        Noop _ -> 
             ( model, Cmd.none )
 
+calculateTotal : Character -> ListItemType -> Int
+calculateTotal character listItemType =
+    (calculateSkillDivided character listItemType) + (calculateSkillOutstanding character listItemType)
 
+calculateSkillDivided : Character -> ListItemType -> Int
+calculateSkillDivided character listItemType =
+    (character.skillList
+        |> List.filter (\value -> value.itemType == listItemType)
+        |> List.map .value
+        |> List.map convertMaybeIntToInt 
+        |> List.sum)
+        // 10
 
+calculateSkillOutstanding : Character -> ListItemType -> Int
+calculateSkillOutstanding character listItemType =
+    (character.skillList
+        |> List.filter (\value -> value.itemType == listItemType && (convertMaybeIntToInt value.value) >= 80)
+        |> List.length )
+        * 10
 
 -- VIEW
 
@@ -301,7 +333,7 @@ view model =
             renderContent pagecharacterSheet model
 
 
-setTabActive : { b | page : a } -> a -> Attribute msg
+setTabActive : Model -> Page -> Attribute msg
 setTabActive model page =
     if model.page == page then
         class "is-active"
@@ -319,15 +351,15 @@ drawTabs model =
                         [ setTabActive model PageBaseProperties
                         ]
                         [ a []
-                            [ text "Basiseigenschaften" ]
+                            [ text "Charakter Eigenschaften" ]
                         ]
                     , li [ setTabActive model PageSkillpoints ]
                         [ a []
-                            [ text "Skillpunkte" ]
+                            [ text "Begabungspunkte" ]
                         ]
                     , li [ setTabActive model PageCharacterSheet ]
                         [ a []
-                            [ text "Character-Blatt" ]
+                            [ text "Charakterbogen" ]
                         ]
                     ]
                 ]
@@ -373,26 +405,6 @@ addInput title placeholderText inputMessage value =
             ]
         ]
 
-
-addInputNumerical value title inputMessage =
-    div [ class "field" ]
-        [ label [ class "label" ]
-            [ text title ]
-        , div [ class "control" ]
-            [ Number.input
-                { onInput = inputMessage
-                , maxLength = Nothing
-                , maxValue = Just 100
-                , minValue = Just 0
-                , hasFocus = Just FocusChanged
-                }
-                [ class "input"
-                ]
-                value
-            ]
-        ]
-
-
 drawActsList list =
     div [ class "column" ]
         (List.filter (\item -> item.itemType == Acts) list 
@@ -422,7 +434,7 @@ createActsNumbers listItem =
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
-                    , hasFocus = Just FocusChanged
+                    , hasFocus = Nothing
                     }
                     [ class "input"
                     ]
@@ -445,7 +457,7 @@ createKnowledgeNumbers listItem =
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
-                    , hasFocus = Just FocusChanged
+                    , hasFocus = Nothing
                     }
                     [ class "input"
                     ]
@@ -468,7 +480,7 @@ createInteractNumbers listItem =
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
-                    , hasFocus = Just FocusChanged
+                    , hasFocus = Nothing
                     }
                     [ class "input"
                     ]
@@ -515,7 +527,6 @@ pageBaseproperties model =
         , addInput "Religion" "Deine Religion" ChangeReligion model.character.religion
         , addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
         , addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age
-        , addInputNumerical model.character.lifePoints "Lebenspunkte" ChangeLifepoints
         , addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
         , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
         , (nextButton model Nothing (Just PageSkillpoints))
@@ -534,6 +545,17 @@ pageSkillpoints model =
             , div [ class "control" ]
                 [ input [ class "input is-large has-text-centered is-static", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
                     []
+                ]
+            ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ showReadonlyListItemValue model.character.acts "Handeln"
+                ]
+            , div [ class "column" ]
+                [ showReadonlyListItemValue model.character.knowledge "Wissen"
+                ]
+            , div [ class "column" ]
+                [ showReadonlyListItemValue model.character.interact "Interagieren"
                 ]
             ]
         , div [ class "columns" ]
@@ -584,7 +606,7 @@ pagecharacterSheet model =
             , div [ class "column" ]
                 []
             , div [ class "column" ]
-                [ showReadonlyLifepoints model.character.lifePoints "Lebenspunkte"
+                [ addInput "Lebenspunkte" "" ChangeLifepoints model.character.lifePoints
                 ]
             , div [ class "column" ]
                 []
@@ -619,7 +641,7 @@ showReadonlyListItemValue listItem title =
                     [ text title ]
                 , div [ class "control" ]
                     [ input [ class "input", type_ "text", disabled True, readonly True ]
-                        [ text "" ]
+                        [ text "Help" ]
                     ]
                 ]
 
@@ -627,34 +649,14 @@ showReadonlyListItemValue listItem title =
             div [ class "field" ]
                 [ label [ class "label" ]
                     [ text title ]
-                , div [ class "control" ]
-                    [ input [ class "input", type_ "text", disabled True, readonly True ]
-                        [ text (toString value) ]
-                    ]
+                ,div [ class "control" ]
+                [ Text.input
+                    (Text.defaultOptions Noop)
+                    [ class "input", type_ "text" ]
+                    (toString value)
                 ]
-
-
-showReadonlyLifepoints : Maybe Int -> String -> Html Msg
-showReadonlyLifepoints value title =
-    div [ class "field" ]
-        [ label [ class "label" ]
-            [ text title ]
-        , div [ class "control" ]
-            [ Number.input
-                { onInput = ChangeLifepoints
-                , maxLength = Nothing
-                , maxValue = Just 100
-                , minValue = Just 0
-                , hasFocus = Just FocusChanged
-                }
-                [ class "input"
-                , disabled True
-                , readonly True
                 ]
-                value
-            ]
-        ]
-
+                
 
 convertMaybeIntToString input =
     case input of
