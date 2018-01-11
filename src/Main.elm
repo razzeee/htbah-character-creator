@@ -30,11 +30,16 @@ type Page
     | PageSkillpoints
     | PageCharacterSheet
 
+type ListItemType
+    = Acts
+    | Knowledge
+    | Interact
+
 
 type alias ListItem =
     { name : String
     , value : Maybe Int
-    , masterItem : Bool
+    , itemType : ListItemType
     }
 
 
@@ -48,8 +53,11 @@ type alias Character =
     , job : String
     , familyStatus : String
     , lifePoints : Maybe Int
+    , knowledge: Maybe Int
     , knowledgeList : List ListItem
+    , interact : Maybe Int
     , interactList : List ListItem
+    , acts : Maybe Int
     , actsList : List ListItem
     , assignedSkillpoints : Int
     , spendableSkillpoints : Int
@@ -69,9 +77,12 @@ init =
             ""
             ""
             (Just 100)
-            [ (ListItem "Wissen" (Just 0) True) ]
-            [ (ListItem "Interagieren" (Just 0) True) ]
-            [ (ListItem "Handeln" (Just 0) True) ]
+            (Just 0)
+            [ (ListItem "Wissen" (Just 0) Knowledge) ]
+            (Just 0)
+            [ (ListItem "Interagieren" (Just 0) Interact) ]
+            (Just 0)
+            [ (ListItem "Handeln" (Just 0) Acts) ]
             0
             500
             "img/character.jpg"
@@ -263,9 +274,9 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.actsList [ (ListItem model.inputNewActsItem (Just 0) False) ]
+                    List.append model.character.actsList [ (ListItem model.inputNewActsItem (Just 0) Acts) ]
             in
-                ( { model | character = { character | actsList = newList } }, Cmd.none )
+                ( { model | character = { character | actsList = newList }, inputNewActsItem = "" }, Cmd.none )
 
         InputNewItemActs value ->
             ( { model | inputNewActsItem = value }, Cmd.none )
@@ -276,9 +287,9 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.knowledgeList [ (ListItem model.inputNewKnowledgeItem (Just 0) False) ]
+                    List.append model.character.knowledgeList [ (ListItem model.inputNewKnowledgeItem (Just 0) Knowledge) ]
             in
-                ( { model | character = { character | knowledgeList = newList } }, Cmd.none )
+                ( { model | character = { character | knowledgeList = newList }, inputNewKnowledgeItem = "" }, Cmd.none )
 
         InputNewItemKnowledge value ->
             ( { model | inputNewKnowledgeItem = value }, Cmd.none )
@@ -289,9 +300,9 @@ update msg model =
                     model.character
 
                 newList =
-                    List.append model.character.interactList [ (ListItem model.inputNewInteractItem (Just 0) False) ]
+                    List.append model.character.interactList [ (ListItem model.inputNewInteractItem (Just 0) Interact) ]
             in
-                ( { model | character = { character | interactList = newList } }, Cmd.none )
+                ( { model | character = { character | interactList = newList }, inputNewInteractItem = "" }, Cmd.none )
 
         InputNewItemInteract value ->
             ( { model | inputNewInteractItem = value }, Cmd.none )
@@ -445,10 +456,8 @@ createActsNumbers listItem =
                     ]
                     listItem.value
                 ]
-            , if not listItem.masterItem then
+            , 
                 div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeActsListRemoveItem listItem.name) ] [ text "X" ] ]
-              else
-                div [ class "control" ] []
             ]
         ]
 
@@ -470,10 +479,8 @@ createKnowledgeNumbers listItem =
                     ]
                     listItem.value
                 ]
-            , if not listItem.masterItem then
-                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name) ] [ text "X" ] ]
-              else
-                div [ class "control" ] []
+               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeKnowledgeListRemoveItem listItem.name) ] [ text "X" ] ]
+
             ]
         ]
 
@@ -495,10 +502,7 @@ createInteractNumbers listItem =
                     ]
                     listItem.value
                 ]
-            , if not listItem.masterItem then
-                div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name) ] [ text "X" ] ]
-              else
-                div [ class "control" ] []
+               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeInteractListRemoveItem listItem.name) ] [ text "X" ] ]
             ]
         ]
 
@@ -616,13 +620,13 @@ pagecharacterSheet model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.actsList) "Handeln"
+                [ showReadonlyListItemValue model.character.acts "Handeln"
                 ]
             , div [ class "column" ]
-                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.knowledgeList) "Wissen"
+                [ showReadonlyListItemValue model.character.knowledge "Wissen"
                 ]
             , div [ class "column" ]
-                [ showReadonlyListItemValue (List.Extra.find (\value -> value.masterItem) model.character.interactList) "Interagieren"
+                [ showReadonlyListItemValue model.character.interact "Interagieren"
                 ]
             ]
         , div [ class "columns" ]
@@ -652,7 +656,7 @@ showReadonlyListItemValue listItem title =
                     [ text title ]
                 , div [ class "control" ]
                     [ input [ class "input", type_ "text", disabled True, readonly True ]
-                        [ text (convertMaybeIntToString value.value) ]
+                        [ text (toString value) ]
                     ]
                 ]
 
