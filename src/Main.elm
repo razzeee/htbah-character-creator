@@ -191,6 +191,7 @@ update msg model =
             let
                 character =
                     model.character
+
                 {-- Total --}
                 summedValues = 
                 character.skillList
@@ -211,7 +212,10 @@ update msg model =
 
 
                 skillListNew =
+                if sumAndCurrentValue <= 500 then
                     List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.skillList
+                else
+                    model.character.skillList
             in
                 ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue, acts = Just actsTotal, knowledge = Just knowledgeTotal, interact = Just interactTotal } }, Cmd.none )
 
@@ -341,8 +345,8 @@ setTabActive model page =
         class ""
 
 
-drawTabs : Model -> Html Msg
-drawTabs model =
+renderTabs : Model -> Html Msg
+renderTabs model =
     div [ class "hero-foot" ]
         [ nav [ class "tabs is-boxed is-fullwidth" ]
             [ div [ class "container" ]
@@ -377,7 +381,7 @@ nextButton model previousPage nextPage =
 
                 Just value ->
                     (button [ class "button is-link", onClick (ChangePage value) ]
-                        [ text "Vorherige" ]
+                        [ text "Zurück" ]
                     )
             ]
         , div [ class "control" ]
@@ -387,7 +391,7 @@ nextButton model previousPage nextPage =
 
                 Just value ->
                     (button [ class "button is-link", onClick (ChangePage value) ]
-                        [ text "Nächste" ]
+                        [ text "Weiter" ]
                     )
             ]
         ]
@@ -405,30 +409,19 @@ addInput title placeholderText inputMessage value =
             ]
         ]
 
-drawActsList list =
+
+renderList itemType list =
     div [ class "column" ]
-        (List.filter (\item -> item.itemType == Acts) list 
-        |> (List.map createActsNumbers ))
+        (List.filter (\item -> item.itemType == itemType) list 
+        |> (List.map createListNumbers ))
 
 
-drawKnowledgeList list =
-    div [ class "column" ]
-        (List.filter (\item -> item.itemType == Knowledge) list 
-        |> (List.map createKnowledgeNumbers ))
-
-
-drawInteractList list =
-    div [ class "column" ]
-        (List.filter (\item -> item.itemType == Interact) list 
-        |> (List.map createInteractNumbers ))
-
-
-createActsNumbers listItem =
+createListNumbers listItem =
     div []
         [ label [ class "label" ]
             [ text listItem.name ]
         , div [ class "field has-addons" ]
-            [ div [ class "control" ]
+            [ div [ class "control is-expanded" ]
                 [ Number.input
                     { onInput = ChangeSkillList listItem.name
                     , maxLength = Nothing
@@ -446,51 +439,6 @@ createActsNumbers listItem =
         ]
 
 
-createKnowledgeNumbers listItem =
-    div []
-        [ label [ class "label" ]
-            [ text listItem.name ]
-        , div [ class "field has-addons" ]
-            [ div [ class "control" ]
-                [ Number.input
-                    { onInput = ChangeSkillList listItem.name
-                    , maxLength = Nothing
-                    , maxValue = Just 100
-                    , minValue = Just 0
-                    , hasFocus = Nothing
-                    }
-                    [ class "input"
-                    ]
-                    listItem.value
-                ]
-               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
-
-            ]
-        ]
-
-
-createInteractNumbers listItem =
-    div []
-        [ label [ class "label" ]
-            [ text listItem.name ]
-        , div [ class "field has-addons" ]
-            [ div [ class "control" ]
-                [ Number.input
-                    { onInput = ChangeSkillList listItem.name
-                    , maxLength = Nothing
-                    , maxValue = Just 100
-                    , minValue = Just 0
-                    , hasFocus = Nothing
-                    }
-                    [ class "input"
-                    ]
-                    listItem.value
-                ]
-               , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
-            ]
-        ]
-
-
 renderContent page model =
     div []
         [ section [ class "hero is-primary" ]
@@ -502,7 +450,7 @@ renderContent page model =
                         [ text "Characterblatt-Ersteller" ]
                     ]
                 ]
-            , drawTabs model
+            , renderTabs model
             ]
         , page model
         , footer [ class "footer" ]
@@ -520,18 +468,40 @@ renderContent page model =
 pageBaseproperties : Model -> Html Msg
 pageBaseproperties model =
     div [ class "container" ]
-        [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName
-        , addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
-        , addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature
-        , addInput "Muttersprache" "Die Muttersprache deines Characters" ChangeStature model.character.primaryLanguage
-        , addInput "Religion" "Deine Religion" ChangeReligion model.character.religion
-        , addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
-        , addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age
-        , addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
-        , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
+    [
+        div [ class "columns" ]
+                [ div [ class "column" ]
+        [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName]
+        , div [ class "column" ] [
+        addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
+        ]
+                ]
+        , div [ class "columns" ]
+            [ div [ class "column" ] [
+        addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature]
+        , div [ class "column" ] [
+         addInput "Muttersprache" "Die Muttersprache deines Characters" ChangeStature model.character.primaryLanguage]
+        ]
+        , div [ class "columns" ]
+            [ div [ class "column" ] [
+        addInput "Religion" "Deine Religion" ChangeReligion model.character.religion]
+        , div [ class "column" ] [
+        addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
+        ]]
+        ,  div [ class "columns" ]
+            [ div [ class "column" ] [
+        addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age]
+        , div [ class "column" ] [
+        addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
+        ]]
+        ,  div [ class "columns" ]
+            [ div [ class "column" ] [
+        addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
+            ]]
         , (nextButton model Nothing (Just PageSkillpoints))
         ]
 
+remainingSkillpoints : Model -> String
 remainingSkillpoints model =
     toString (model.character.spendableSkillpoints - model.character.assignedSkillpoints)
 
@@ -543,7 +513,7 @@ pageSkillpoints model =
             [ label [ class "label has-text-centered" ]
                 [ text "Verbleibende Skillpunkte" ]
             , div [ class "control" ]
-                [ input [ class "input is-large has-text-centered is-static", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
+                [ input [ class "input is-large has-text-centered", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
                     []
                 ]
             ]
@@ -559,9 +529,9 @@ pageSkillpoints model =
                 ]
             ]
         , div [ class "columns" ]
-            [ drawActsList model.character.skillList
-            , drawKnowledgeList model.character.skillList
-            , drawInteractList model.character.skillList
+            [ renderList Acts model.character.skillList
+            , renderList Knowledge model.character.skillList
+            , renderList Interact model.character.skillList 
             ]
         , div [ class "columns" ]
             [ renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
@@ -575,18 +545,13 @@ pageSkillpoints model =
 pagecharacterSheet : Model -> Html Msg
 pagecharacterSheet model =
     div [ class "container" ]
-        [ div [ class "field" ]
-            [ label [ class "label has-text-centered" ]
-                [ text "Charakterbogen" ]
-            ]
-        , div [ class "columns" ]
+        [ div [ class "columns" ]
             [ div [ class "column" ]
                 [ addInput "Vorname" "" ChangeFirstname model.character.firstName
                 , addInput "Geschlecht" "" ChangeSex model.character.sex
-                ]
-            , div [ class "column" ]
-                [ addInput "Name" "" ChangeSex model.character.name
+                ,addInput "Name" "" ChangeSex model.character.name
                 , addInput "Alter" "" ChangeSex model.character.age
+                , addInput "Muttersprache" "" ChangeStature model.character.primaryLanguage
                 ]
             , div [ class "column" ]
                 [ img [ src model.character.picture ] []
@@ -594,9 +559,7 @@ pagecharacterSheet model =
             , div [ class "column" ]
                 [ addInput "Statur" "" ChangeSex model.character.stature
                 , addInput "Beruf" "" ChangeSex model.character.job
-                ]
-            , div [ class "column" ]
-                [ addInput "Religion" "" ChangeSex model.character.religion
+                , addInput "Religion" "" ChangeSex model.character.religion
                 , addInput "Familienstand" "" ChangeSex model.character.familyStatus
                 ]
             ]
@@ -623,11 +586,6 @@ pagecharacterSheet model =
             , div [ class "column" ]
                 [ showReadonlyListItemValue model.character.interact "Interagieren"
                 ]
-            ]
-        , div [ class "columns" ]
-            [ div [ class "column" ] []
-            , div [ class "column" ] []
-            , div [ class "column" ] []
             ]
         , (nextButton model (Just PageSkillpoints) Nothing)
         ]
@@ -677,7 +635,7 @@ convertMaybeIntToInt input =
 renderInputForNewItem value inputEvent onClickEvent =
     div [ class "column" ]
         [ div [ class "field has-addons" ]
-            [ div [ class "control" ]
+            [ div [ class "control is-expanded" ]
                 [ Text.input
                     (Text.defaultOptions inputEvent)
                     [ class "input", type_ "text", placeholder "Neue Begabung" ]
