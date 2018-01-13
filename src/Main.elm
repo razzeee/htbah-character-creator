@@ -101,6 +101,7 @@ type Msg
     = ChangeName String
     | ChangeFirstname String
     | ChangeStature String
+    | ChangePrimaryLanguage String
     | ChangeReligion String
     | ChangeSex String
     | ChangeAge String
@@ -141,6 +142,13 @@ update msg model =
                     model.character
             in
                 ( { model | character = { character | stature = stature } }, Cmd.none )
+
+        ChangePrimaryLanguage primaryLanguage ->
+            let
+                character =
+                    model.character
+            in
+                ( { model | character = { character | primaryLanguage = primaryLanguage } }, Cmd.none )
 
         ChangeReligion religion ->
             let
@@ -397,15 +405,16 @@ nextButton model previousPage nextPage =
         ]
 
 
-addInput title placeholderText inputMessage value =
+addInput title placeholderText inputMessage value readonlyInput =
     div [ class "field" ]
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
-            [ Text.input
+            [
+                (Text.input
                 (Text.defaultOptions inputMessage)
-                [ class "input", type_ "text", placeholder placeholderText ]
-                value
+                [ class (if readonlyInput then "input is-static" else "input"), type_ "text", placeholder placeholderText, readonly readonlyInput ]
+                value)
             ]
         ]
 
@@ -471,33 +480,32 @@ pageBaseproperties model =
     [
         div [ class "columns" ]
                 [ div [ class "column" ]
-        [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName]
+        [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName False]
         , div [ class "column" ] [
-        addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name
-        ]
+        addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name False]
                 ]
         , div [ class "columns" ]
             [ div [ class "column" ] [
-        addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature]
+        addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature False]
         , div [ class "column" ] [
-         addInput "Muttersprache" "Die Muttersprache deines Characters" ChangeStature model.character.primaryLanguage]
+         addInput "Muttersprache" "Die Muttersprache deines Characters" ChangePrimaryLanguage model.character.primaryLanguage False]
         ]
         , div [ class "columns" ]
             [ div [ class "column" ] [
-        addInput "Religion" "Deine Religion" ChangeReligion model.character.religion]
+        addInput "Religion" "Deine Religion" ChangeReligion model.character.religion False]
         , div [ class "column" ] [
-        addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex
-        ]]
+        addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex False]
+        ]
         ,  div [ class "columns" ]
             [ div [ class "column" ] [
-        addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age]
+        addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age False]
         , div [ class "column" ] [
-        addInput "Beruf" "Dein Beruf" ChangeJob model.character.job
-        ]]
+        addInput "Beruf" "Dein Beruf" ChangeJob model.character.job False]
+        ]
         ,  div [ class "columns" ]
             [ div [ class "column" ] [
-        addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus
-            ]]
+        addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus False]
+        ]
         , (nextButton model Nothing (Just PageSkillpoints))
         ]
 
@@ -534,9 +542,9 @@ pageSkillpoints model =
             , renderList Interact model.character.skillList 
             ]
         , div [ class "columns" ]
-            [ renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem
-            , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem
-            , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem
+            [ renderInputForNewItem model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
+            , renderInputForNewItem model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
+            , renderInputForNewItem model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
             ]
         , (nextButton model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
@@ -547,20 +555,20 @@ pagecharacterSheet model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Vorname" "" ChangeFirstname model.character.firstName
-                , addInput "Geschlecht" "" ChangeSex model.character.sex
-                ,addInput "Name" "" ChangeSex model.character.name
-                , addInput "Alter" "" ChangeSex model.character.age
-                , addInput "Muttersprache" "" ChangeStature model.character.primaryLanguage
+                [ addInput "Vorname" "" ChangeFirstname model.character.firstName True
+                , addInput "Geschlecht" "" ChangeSex model.character.sex True
+                ,addInput "Name" "" ChangeName model.character.name True
+                , addInput "Alter" "" ChangeAge model.character.age True
+                , addInput "Muttersprache" "" ChangePrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
                 [ img [ src model.character.picture ] []
                 ]
             , div [ class "column" ]
-                [ addInput "Statur" "" ChangeSex model.character.stature
-                , addInput "Beruf" "" ChangeSex model.character.job
-                , addInput "Religion" "" ChangeSex model.character.religion
-                , addInput "Familienstand" "" ChangeSex model.character.familyStatus
+                [ addInput "Statur" "" ChangeStature model.character.stature True
+                , addInput "Beruf" "" ChangeJob model.character.job True
+                , addInput "Religion" "" ChangeReligion model.character.religion True
+                , addInput "Familienstand" "" ChangeFamilystatus model.character.familyStatus True
                 ]
             ]
         , div [ class "columns" ]
@@ -569,7 +577,7 @@ pagecharacterSheet model =
             , div [ class "column" ]
                 []
             , div [ class "column" ]
-                [ addInput "Lebenspunkte" "" ChangeLifepoints model.character.lifePoints
+                [ addInput "Lebenspunkte" "" ChangeLifepoints model.character.lifePoints True
                 ]
             , div [ class "column" ]
                 []
@@ -632,13 +640,14 @@ convertMaybeIntToInt input =
         Just value ->
             value
 
-renderInputForNewItem value inputEvent onClickEvent =
+renderInputForNewItem : String -> (String -> msg) -> msg -> String -> Html msg
+renderInputForNewItem value inputEvent onClickEvent placeholderString =
     div [ class "column" ]
         [ div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
                     (Text.defaultOptions inputEvent)
-                    [ class "input", type_ "text", placeholder "Neue Begabung" ]
+                    [ class "input", type_ "text", placeholder placeholderString ]
                     value
                 ]
             , div [ class "control" ]
