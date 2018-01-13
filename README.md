@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Razzeee/htbah-character-creator.svg?branch=doesntcompile)](https://travis-ci.org/Razzeee/htbah-character-creator)
+
 # htbah-character-creator
 
 ## Development
