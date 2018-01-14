@@ -407,19 +407,17 @@ pageSkillpoints model =
             [ div [ class "column" ]
                 [ showReadonlyInput model.character.acts "Handeln"
                 , renderList Acts model.character.skillList
-            , renderInputWithPlusButton model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
+                , renderInputWithPlusButton model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.knowledge "Wissen"
-                ,
-             renderList Knowledge model.character.skillList
-            , renderInputWithPlusButton model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
+                , renderList Knowledge model.character.skillList
+                , renderInputWithPlusButton model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.interact "Interagieren"
-                , 
-             renderList Interact model.character.skillList
-            , renderInputWithPlusButton model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
+                , renderList Interact model.character.skillList
+                , renderInputWithPlusButton model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
@@ -562,15 +560,15 @@ addInput title placeholderText inputMessage value readonlyInput =
 
 
 renderOrderedStaticList itemType list =
-    div [ ]
+    div []
         (list
-            |> List.filter (\item -> item.itemType == itemType) 
+            |> List.filter (\item -> item.itemType == itemType)
             |> (List.map createListNumbers)
         )
 
 
 renderList itemType list =
-    div [ ]
+    div []
         (list
             |> List.filter (\item -> item.itemType == itemType)
             |> (List.map createListNumbers)
@@ -651,7 +649,7 @@ convertMaybeIntToInt input =
 
 renderInputWithPlusButton : String -> (String -> msg) -> msg -> String -> Html msg
 renderInputWithPlusButton value inputEvent onClickEvent placeholderString =
-    div [ ]
+    div []
         [ div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
