@@ -20,8 +20,11 @@ type alias Model =
     { character : Character
     , page : Page
     , inputNewActsItem : String
+    , inputNewActsItemError : String
     , inputNewKnowledgeItem : String
+    , inputNewKnowledgeItemError : String
     , inputNewInteractItem : String
+    , inputNewInteractItemError : String
     }
 
 
@@ -87,6 +90,9 @@ init =
             "img/character.jpg"
         )
         PageBaseProperties
+        ""
+        ""
+        ""
         ""
         ""
         ""
@@ -236,18 +242,20 @@ update msg model =
                     model.character
 
                 newList =
-                    if String.trim model.inputNewActsItem /= "" then
+                    if checkIfValidNewItem model.inputNewActsItem model.character.skillList then
                         List.append model.character.skillList [ (ListItem model.inputNewActsItem 0 Acts) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if String.trim model.inputNewActsItem /= "" then
+                    if checkIfValidNewItem model.inputNewActsItem model.character.skillList then
                         ""
                     else
                         model.inputNewActsItem
+                
+                newInputItemError = checkInputForErrorAndGenerateString model.inputNewActsItem model.character.skillList
             in
-                ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
         InputNewItemActs value ->
             ( { model | inputNewActsItem = value }, Cmd.none )
@@ -258,18 +266,20 @@ update msg model =
                     model.character
 
                 newList =
-                    if String.trim model.inputNewKnowledgeItem /= "" then
+                    if checkIfValidNewItem model.inputNewKnowledgeItem model.character.skillList then
                         List.append model.character.skillList [ (ListItem model.inputNewKnowledgeItem 0 Knowledge) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if String.trim model.inputNewKnowledgeItem /= "" then
+                    if checkIfValidNewItem model.inputNewKnowledgeItem model.character.skillList then
                         ""
                     else
                         model.inputNewKnowledgeItem
+
+                newInputItemError = checkInputForErrorAndGenerateString model.inputNewKnowledgeItem model.character.skillList
             in
-                ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
         InputNewItemKnowledge value ->
             ( { model | inputNewKnowledgeItem = value }, Cmd.none )
@@ -280,18 +290,20 @@ update msg model =
                     model.character
 
                 newList =
-                    if String.trim model.inputNewInteractItem /= "" then
+                    if checkIfValidNewItem model.inputNewInteractItem model.character.skillList then
                         List.append model.character.skillList [ (ListItem model.inputNewInteractItem 0 Interact) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if String.trim model.inputNewInteractItem /= "" then
+                    if checkIfValidNewItem model.inputNewInteractItem model.character.skillList then
                         ""
                     else
                         model.inputNewInteractItem
+
+                newInputItemError = checkInputForErrorAndGenerateString model.inputNewInteractItem model.character.skillList
             in
-                ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem }, Cmd.none )
+                ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
         InputNewItemInteract value ->
             ( { model | inputNewInteractItem = value }, Cmd.none )
@@ -327,6 +339,23 @@ calculateSkillOutstanding character listItemType =
         * 10
 
 
+checkForDuplicate list name =
+    list
+        |> List.map .name
+        |> List.member name
+
+checkIfValidNewItem : String -> List ListItem -> Bool
+checkIfValidNewItem value list =
+    String.trim value /= "" && not (checkForDuplicate list value)
+
+
+checkInputForErrorAndGenerateString value list =
+    if String.trim value == "" then
+        "Bitte geb einen Namen für die Begabung ein."
+    else if (checkForDuplicate list value) then
+        "Begabung mit dem Namen bereits vorhanden."
+    else
+        ""
 
 -- VIEW
 
@@ -403,21 +432,22 @@ pageSkillpoints model =
                     []
                 ]
             ]
+        , p [] []
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ showReadonlyInput model.character.acts "Handeln"
                 , renderList Acts model.character.skillList
-                , renderInputWithPlusButton model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
+                , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.knowledge "Wissen"
                 , renderList Knowledge model.character.skillList
-                , renderInputWithPlusButton model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
+                , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.interact "Interagieren"
                 , renderList Interact model.character.skillList
-                , renderInputWithPlusButton model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
+                , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
@@ -431,15 +461,15 @@ pageCharacterSheet model =
             [ div [ class "column" ]
                 [ addInput "Vorname" "" ChangeFirstname model.character.firstName True
                 , addInput "Geschlecht" "" ChangeSex model.character.sex True
-                , addInput "Name" "" ChangeName model.character.name True
                 , addInput "Alter" "" ChangeAge model.character.age True
+                , addInput "Statur" "" ChangeStature model.character.stature True
                 , addInput "Muttersprache" "" ChangePrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
                 [ img [ src model.character.picture ] []
                 ]
             , div [ class "column" ]
-                [ addInput "Statur" "" ChangeStature model.character.stature True
+                [ addInput "Name" "" ChangeName model.character.name True
                 , addInput "Beruf" "" ChangeJob model.character.job True
                 , addInput "Religion" "" ChangeReligion model.character.religion True
                 , addInput "Familienstand" "" ChangeFamilystatus model.character.familyStatus True
@@ -609,7 +639,7 @@ renderHeaderAndFooter page model =
                 ]
             , renderTabs model
             ]
-        , page model
+        , section [ class "section" ] [ page model ]
         , footer [ class "footer" ]
             [ div [ class "container" ]
                 [ div [ class "content has-text-centered" ]
@@ -646,10 +676,12 @@ convertMaybeIntToInt input =
             value
 
 
-renderInputWithPlusButton : String -> (String -> msg) -> msg -> String -> Html msg
-renderInputWithPlusButton value inputEvent onClickEvent placeholderString =
+renderInputWithPlusButton : String -> String -> (String -> msg) -> msg -> String -> Html msg
+renderInputWithPlusButton value error inputEvent onClickEvent placeholderString =
     div []
-        [ div [ class "field has-addons" ]
+        [ label [ class "label" ]
+            [ text "" ]
+            , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
                     (Text.defaultOptions inputEvent)
@@ -661,4 +693,7 @@ renderInputWithPlusButton value inputEvent onClickEvent placeholderString =
                     [ i [ class "fa fa-plus" ] [] ]
                 ]
             ]
+        , if error /= "" then div [ class "notification is-danger" ] [
+            text error
+        ] else div [] []
         ]
