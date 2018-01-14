@@ -118,11 +118,11 @@ type Msg
     | ChangeSkillList String (Maybe Int)
     | ChangeSkillListRemoveItem String
     | InputNewItemActs String
-    | ChangeActsAddNewItem
+    | ChangeActsAddNewItem String ListItemType
     | InputNewItemKnowledge String
-    | ChangeKnowledgeAddNewItem
+    | ChangeKnowledgeAddNewItem String ListItemType
     | InputNewItemInteract String
-    | ChangeInteractAddNewItem
+    | ChangeInteractAddNewItem String ListItemType
     | NoOp String
 
 
@@ -236,72 +236,72 @@ update msg model =
             in
                 ( { model | character = { character | skillList = skillListNew } }, Cmd.none )
 
-        ChangeActsAddNewItem ->
+        ChangeActsAddNewItem newValue itemType ->
             let
                 character =
                     model.character
 
                 newList =
-                    if checkIfValidNewItem model.inputNewActsItem model.character.skillList then
-                        List.append model.character.skillList [ (ListItem model.inputNewActsItem 0 Acts) ]
+                    if checkIfValidNewItem newValue model.character.skillList then
+                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if checkIfValidNewItem model.inputNewActsItem model.character.skillList then
+                    if checkIfValidNewItem newValue model.character.skillList then
                         ""
                     else
-                        model.inputNewActsItem
-                
-                newInputItemError = checkInputForErrorAndGenerateString model.inputNewActsItem model.character.skillList
+                        newValue
+
+                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
         InputNewItemActs value ->
             ( { model | inputNewActsItem = value }, Cmd.none )
 
-        ChangeKnowledgeAddNewItem ->
+        ChangeKnowledgeAddNewItem newValue itemType ->
             let
                 character =
                     model.character
 
                 newList =
-                    if checkIfValidNewItem model.inputNewKnowledgeItem model.character.skillList then
-                        List.append model.character.skillList [ (ListItem model.inputNewKnowledgeItem 0 Knowledge) ]
+                    if checkIfValidNewItem newValue model.character.skillList then
+                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if checkIfValidNewItem model.inputNewKnowledgeItem model.character.skillList then
+                    if checkIfValidNewItem newValue model.character.skillList then
                         ""
                     else
-                        model.inputNewKnowledgeItem
+                        newValue
 
-                newInputItemError = checkInputForErrorAndGenerateString model.inputNewKnowledgeItem model.character.skillList
+                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
         InputNewItemKnowledge value ->
             ( { model | inputNewKnowledgeItem = value }, Cmd.none )
 
-        ChangeInteractAddNewItem ->
+        ChangeInteractAddNewItem newValue itemType ->
             let
                 character =
                     model.character
 
                 newList =
-                    if checkIfValidNewItem model.inputNewInteractItem model.character.skillList then
-                        List.append model.character.skillList [ (ListItem model.inputNewInteractItem 0 Interact) ]
+                    if checkIfValidNewItem newValue model.character.skillList then
+                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
                     else
                         model.character.skillList
 
                 newInputItem =
-                    if checkIfValidNewItem model.inputNewInteractItem model.character.skillList then
+                    if checkIfValidNewItem newValue model.character.skillList then
                         ""
                     else
-                        model.inputNewInteractItem
+                        newValue
 
-                newInputItemError = checkInputForErrorAndGenerateString model.inputNewInteractItem model.character.skillList
+                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
@@ -437,17 +437,17 @@ pageSkillpoints model =
             [ div [ class "column" ]
                 [ showReadonlyInput model.character.acts "Handeln"
                 , renderList Acts model.character.skillList
-                , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
+                , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.knowledge "Wissen"
                 , renderList Knowledge model.character.skillList
-                , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
+                , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.interact "Interagieren"
                 , renderList Interact model.character.skillList
-                , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
+                , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
