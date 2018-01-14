@@ -7,7 +7,7 @@ cache:
   
 env:
   matrix:
-- ELM_VERSION=0.18.0 TARGET_NODE_VERSION=node  
+    - ELM_VERSION=0.18.0 TARGET_NODE_VERSION=node  
 
 before_install:
   - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
