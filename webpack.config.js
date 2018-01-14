@@ -154,7 +154,7 @@ if (TARGET_ENV === 'production') {
         {
           test: /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
-          use: ['elm-hot-loader', 'elm-webpack-loader?verbose=true&warn=true&pathToMake=/bin/elm-make'],
+          use: ['elm-hot-loader', 'elm-webpack-loader?verbose=true&warn=true&pathToMake=$(npm config get prefix)/bin/elm-make'],
         },
       ],
     }
