@@ -461,15 +461,15 @@ pageCharacterSheet model =
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ showReadonlyInput model.character.acts "Handeln"
-                , renderList Acts model.character.skillList
+                , renderOrderedStaticList Acts model.character.skillList
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.knowledge "Wissen"
-                , renderList Knowledge model.character.skillList
+                , renderOrderedStaticList Knowledge model.character.skillList
                 ]
             , div [ class "column" ]
                 [ showReadonlyInput model.character.interact "Interagieren"
-                , renderList Interact model.character.skillList
+                , renderOrderedStaticList Interact model.character.skillList
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing)
@@ -543,30 +543,29 @@ addInput title placeholderText inputMessage value readonlyInput =
         , div [ class "control" ]
             [ (Text.input
                 (Text.defaultOptions inputMessage)
-                [ class
-                    (if readonlyInput then
-                        "input is-static"
-                     else
-                        "input"
-                    )
+                [ class "input"
                 , type_ "text"
                 , placeholder placeholderText
                 , readonly readonlyInput
+                , disabled readonlyInput
                 ]
                 value
               )
             ]
         ]
 
-
+renderOrderedStaticList : ListItemType -> List ListItem -> Html Msg
 renderOrderedStaticList itemType list =
     div []
         (list
             |> List.filter (\item -> item.itemType == itemType)
-            |> (List.map createListNumbers)
+            |> List.sortBy .value
+            |> List.reverse
+            |> (List.map (\input -> addInput input.name "" NoOp (toString input.value) True))
         )
 
 
+renderList : ListItemType -> List ListItem -> Html Msg
 renderList itemType list =
     div []
         (list
@@ -596,7 +595,7 @@ createListNumbers listItem =
             ]
         ]
 
-
+renderHeaderAndFooter : (Model -> Html Msg) -> Model -> Html Msg
 renderHeaderAndFooter page model =
     div []
         [ section [ class "hero is-primary" ]
