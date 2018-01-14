@@ -8,6 +8,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const OpenBrowserPlugin = require('open-browser-webpack-plugin')
 const autoprefixer = require('autoprefixer')
+const globalModules = require('global-modules');
+
 
 const TARGET_ENV =
   process.env.npm_lifecycle_event === 'build' ? 'production' : 'development'
@@ -138,6 +140,7 @@ if (TARGET_ENV === 'development') {
 
 if (TARGET_ENV === 'production') {
   console.log('=== Building for production')
+  console.log(globalModules);
   module.exports = merge(common, {
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -154,7 +157,7 @@ if (TARGET_ENV === 'production') {
         {
           test: /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
-          use: ['elm-hot-loader', 'elm-webpack-loader?verbose=true&warn=true&pathToMake=$(npm config get prefix)/bin/elm-make'],
+          use: ['elm-hot-loader', 'elm-webpack-loader?verbose=true&warn=true&pathToMake="'+ globalModules + '\\bin\\elm-make'],
         },
       ],
     }
