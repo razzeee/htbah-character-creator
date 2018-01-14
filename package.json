@@ -29,7 +29,7 @@
     "webpack": "^3.4.1",
     "webpack-build-notifier": "^0.1.16",
     "webpack-dev-server": "^2.6.1",
-    "webpack-merge": "^4.1.0"
+    "webpack-merge": "^4.1.1"
   },
   "private": true,
   "license": "UNLICENSED"
