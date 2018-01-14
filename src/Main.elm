@@ -39,7 +39,7 @@ type ListItemType
 
 type alias ListItem =
     { name : String
-    , value : Maybe Int
+    , value : Int
     , itemType : ListItemType
     }
 
@@ -195,7 +195,6 @@ update msg model =
                     character.skillList
                         |> List.filter (\value -> value.name /= name)
                         |> List.map .value
-                        |> List.map convertMaybeIntToInt
                         |> List.sum
 
                 sumAndCurrentValue =
@@ -215,7 +214,7 @@ update msg model =
 
                 skillListNew =
                     if sumAndCurrentValue <= 500 then
-                        List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = value }) model.character.skillList
+                        List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = convertMaybeIntToInt value }) model.character.skillList
                     else
                         model.character.skillList
             in
@@ -238,7 +237,7 @@ update msg model =
 
                 newList =
                     if String.trim model.inputNewActsItem /= "" then
-                        List.append model.character.skillList [ (ListItem model.inputNewActsItem (Just 0) Acts) ]
+                        List.append model.character.skillList [ (ListItem model.inputNewActsItem 0 Acts) ]
                     else
                         model.character.skillList
 
@@ -260,7 +259,7 @@ update msg model =
 
                 newList =
                     if String.trim model.inputNewKnowledgeItem /= "" then
-                        List.append model.character.skillList [ (ListItem model.inputNewKnowledgeItem (Just 0) Knowledge) ]
+                        List.append model.character.skillList [ (ListItem model.inputNewKnowledgeItem 0 Knowledge) ]
                     else
                         model.character.skillList
 
@@ -282,7 +281,7 @@ update msg model =
 
                 newList =
                     if String.trim model.inputNewInteractItem /= "" then
-                        List.append model.character.skillList [ (ListItem model.inputNewInteractItem (Just 0) Interact) ]
+                        List.append model.character.skillList [ (ListItem model.inputNewInteractItem 0 Interact) ]
                     else
                         model.character.skillList
 
@@ -314,7 +313,6 @@ calculateSkillDivided character listItemType =
     (character.skillList
         |> List.filter (\value -> value.itemType == listItemType)
         |> List.map .value
-        |> List.map convertMaybeIntToInt
         |> List.sum
     )
         // 10
@@ -323,7 +321,7 @@ calculateSkillDivided character listItemType =
 calculateSkillOutstanding : Character -> ListItemType -> Int
 calculateSkillOutstanding character listItemType =
     (character.skillList
-        |> List.filter (\value -> value.itemType == listItemType && (convertMaybeIntToInt value.value) >= 80)
+        |> List.filter (\value -> value.itemType == listItemType && value.value >= 80)
         |> List.length
     )
         * 10
@@ -343,7 +341,7 @@ view model =
             renderHeaderAndFooter pageSkillpoints model
 
         PageCharacterSheet ->
-            renderHeaderAndFooter pagecharacterSheet model
+            renderHeaderAndFooter pageCharacterSheet model
 
 
 pageBaseproperties : Model -> Html Msg
@@ -407,31 +405,29 @@ pageSkillpoints model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ showReadonlyListItemValue model.character.acts "Handeln"
+                [ showReadonlyInput model.character.acts "Handeln"
+                , renderList Acts model.character.skillList
+            , renderInputWithPlusButton model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
                 ]
             , div [ class "column" ]
-                [ showReadonlyListItemValue model.character.knowledge "Wissen"
-                ]
-            , div [ class "column" ]
-                [ showReadonlyListItemValue model.character.interact "Interagieren"
-                ]
-            ]
-        , div [ class "columns" ]
-            [ renderList Acts model.character.skillList
-            , renderList Knowledge model.character.skillList
-            , renderList Interact model.character.skillList
-            ]
-        , div [ class "columns" ]
-            [ renderInputWithPlusButton model.inputNewActsItem InputNewItemActs ChangeActsAddNewItem "Neue Handeln Begabung"
+                [ showReadonlyInput model.character.knowledge "Wissen"
+                ,
+             renderList Knowledge model.character.skillList
             , renderInputWithPlusButton model.inputNewKnowledgeItem InputNewItemKnowledge ChangeKnowledgeAddNewItem "Neue Wissens Begabung"
+                ]
+            , div [ class "column" ]
+                [ showReadonlyInput model.character.interact "Interagieren"
+                , 
+             renderList Interact model.character.skillList
             , renderInputWithPlusButton model.inputNewInteractItem InputNewItemInteract ChangeInteractAddNewItem "Neue Interaktions Begabung"
+                ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
 
 
-pagecharacterSheet : Model -> Html Msg
-pagecharacterSheet model =
+pageCharacterSheet : Model -> Html Msg
+pageCharacterSheet model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
@@ -466,13 +462,16 @@ pagecharacterSheet model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ showReadonlyListItemValue model.character.acts "Handeln"
+                [ showReadonlyInput model.character.acts "Handeln"
+                , renderList Acts model.character.skillList
                 ]
             , div [ class "column" ]
-                [ showReadonlyListItemValue model.character.knowledge "Wissen"
+                [ showReadonlyInput model.character.knowledge "Wissen"
+                , renderList Knowledge model.character.skillList
                 ]
             , div [ class "column" ]
-                [ showReadonlyListItemValue model.character.interact "Interagieren"
+                [ showReadonlyInput model.character.interact "Interagieren"
+                , renderList Interact model.character.skillList
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing)
@@ -562,9 +561,18 @@ addInput title placeholderText inputMessage value readonlyInput =
         ]
 
 
+renderOrderedStaticList itemType list =
+    div [ ]
+        (list
+            |> List.filter (\item -> item.itemType == itemType) 
+            |> (List.map createListNumbers)
+        )
+
+
 renderList itemType list =
-    div [ class "column" ]
-        (List.filter (\item -> item.itemType == itemType) list
+    div [ ]
+        (list
+            |> List.filter (\item -> item.itemType == itemType)
             |> (List.map createListNumbers)
         )
 
@@ -584,7 +592,7 @@ createListNumbers listItem =
                     }
                     [ class "input"
                     ]
-                    listItem.value
+                    (Just listItem.value)
                 ]
             , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
             ]
@@ -617,15 +625,15 @@ renderHeaderAndFooter page model =
         ]
 
 
-showReadonlyListItemValue : Int -> String -> Html Msg
-showReadonlyListItemValue listItem title =
+showReadonlyInput : Int -> String -> Html Msg
+showReadonlyInput value title =
     div [ class "field" ]
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
             [ Text.input
                 (Text.defaultOptions NoOp)
-                [ class "input", type_ "text" ]
+                [ class "input", type_ "text", readonly True, disabled True ]
                 (toString value)
             ]
         ]
@@ -643,7 +651,7 @@ convertMaybeIntToInt input =
 
 renderInputWithPlusButton : String -> (String -> msg) -> msg -> String -> Html msg
 renderInputWithPlusButton value inputEvent onClickEvent placeholderString =
-    div [ class "column" ]
+    div [ ]
         [ div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
