@@ -34,7 +34,8 @@ install: # install specific versions of elm & elm-test
   - npm install
 
 script:
-  - npm run build
+  #- npm run build
+  - elm-make /home/travis/build/Razzeee/htbah-character-creator/src/Main.elm --yes --warn --output /tmp/118015-4418-v6zb1o.qwck9.js
 
 deploy:
   provider: pages
