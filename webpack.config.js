@@ -8,7 +8,6 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const OpenBrowserPlugin = require('open-browser-webpack-plugin')
 const autoprefixer = require('autoprefixer')
-const prefix = require('global-prefix');
 
 
 const TARGET_ENV =
@@ -140,7 +139,6 @@ if (TARGET_ENV === 'development') {
 
 if (TARGET_ENV === 'production') {
   console.log('=== Building for production')
-  console.log(prefix);
   module.exports = merge(common, {
     output: {
       path: path.resolve(__dirname, 'dist'),
