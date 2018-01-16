@@ -432,23 +432,28 @@ pageSkillpoints model =
                     []
                 ]
             ]
-        , p [] []
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ showReadonlyInput model.character.acts "Handeln"
+                [ 
+                    div [ class "box" ] [
+                    showReadonlyInput model.character.acts "Handeln"
                 , renderList Acts model.character.skillList
                 , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
-                ]
+                ]]
             , div [ class "column" ]
-                [ showReadonlyInput model.character.knowledge "Wissen"
+                [ 
+                    div [ class "box" ] [
+                 showReadonlyInput model.character.knowledge "Wissen"
                 , renderList Knowledge model.character.skillList
                 , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
-                ]
+                ]]
             , div [ class "column" ]
-                [ showReadonlyInput model.character.interact "Interagieren"
+                [ 
+                    div [ class "box" ] [
+                showReadonlyInput model.character.interact "Interagieren"
                 , renderList Interact model.character.skillList
                 , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
-                ]
+                ]]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
@@ -466,8 +471,11 @@ pageCharacterSheet model =
                 , addInput "Muttersprache" "" ChangePrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
-                [ img [ src model.character.picture ] []
-                ]
+                [
+                    figure [ class "image is-square" ]
+                    [
+                     img [ src model.character.picture ] []
+                ]]
             , div [ class "column" ]
                 [ addInput "Name" "" ChangeName model.character.name True
                 , addInput "Beruf" "" ChangeJob model.character.job True
@@ -490,16 +498,22 @@ pageCharacterSheet model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
+            [ div [ class "box" ]
                 [ showReadonlyInput model.character.acts "Handeln"
                 , renderOrderedStaticList Acts model.character.skillList
                 ]
+                ]
             , div [ class "column" ]
+            [ div [ class "box" ]
                 [ showReadonlyInput model.character.knowledge "Wissen"
                 , renderOrderedStaticList Knowledge model.character.skillList
                 ]
+                ]
             , div [ class "column" ]
+            [ div [ class "box" ]
                 [ showReadonlyInput model.character.interact "Interagieren"
                 , renderOrderedStaticList Interact model.character.skillList
+                ]
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing)
@@ -654,14 +668,12 @@ renderHeaderAndFooter page model =
 
 showReadonlyInput : Int -> String -> Html Msg
 showReadonlyInput value title =
-    div [ class "field" ]
-        [ label [ class "label" ]
+    div [ class "tags has-addons is-centered" ]
+        [ Html.span [ class "tag is-large" ]
             [ text title ]
-        , div [ class "control" ]
-            [ Text.input
-                (Text.defaultOptions NoOp)
-                [ class "input", type_ "text", readonly True, disabled True ]
-                (toString value)
+        , Html.span [ class "tag is-primary is-large" ]
+            [ 
+                text (toString value)
             ]
         ]
 
