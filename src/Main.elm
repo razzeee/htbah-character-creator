@@ -657,7 +657,7 @@ createListNumbers listItem =
                     ]
                     (Just listItem.value)
                 ]
-            , div [ class "control" ] [ a [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ text "X" ] ]
+            , div [ class "control" ] [ button [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ i [ class "fa fa-trash" ] [] ] ]
             ]
         ]
 
@@ -682,13 +682,13 @@ renderHeaderAndFooter page model =
                 [ div [ class "content has-text-centered" ]
                     [ p []
                         [ text "How to be a hero character sheet creator done with "
-                        , i [ class "fa fa-heart"] []
+                        , i [ class "fa fa-heart" ] []
                         , text " by Kolja Lampe. The source code is licensed MIT."
                         ]
-                    , p [] [
-                        text "You can find it on ",
-                        a [ href "https://github.com/Razzeee/htbah-character-creator/"] [ text "github" ]
-                    ]
+                    , p []
+                        [ text "You can find it on "
+                        , a [ href "https://github.com/Razzeee/htbah-character-creator/" ] [ text "github" ]
+                        ]
                     ]
                 ]
             ]
