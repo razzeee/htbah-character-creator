@@ -253,7 +253,8 @@ update msg model =
                     else
                         newValue
 
-                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
+                newInputItemError =
+                    checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
@@ -277,7 +278,8 @@ update msg model =
                     else
                         newValue
 
-                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
+                newInputItemError =
+                    checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
@@ -301,7 +303,8 @@ update msg model =
                     else
                         newValue
 
-                newInputItemError = checkInputForErrorAndGenerateString newValue model.character.skillList
+                newInputItemError =
+                    checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
@@ -344,6 +347,7 @@ checkForDuplicate list name =
         |> List.map .name
         |> List.member name
 
+
 checkIfValidNewItem : String -> List ListItem -> Bool
 checkIfValidNewItem value list =
     String.trim value /= "" && not (checkForDuplicate list value)
@@ -356,6 +360,8 @@ checkInputForErrorAndGenerateString value list =
         "Begabung mit dem Namen bereits vorhanden."
     else
         ""
+
+
 
 -- VIEW
 
@@ -434,26 +440,42 @@ pageSkillpoints model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ 
-                    div [ class "box" ] [
-                    showReadonlyInput model.character.acts "Handeln"
-                , renderList Acts model.character.skillList
-                , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
-                ]]
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.acts "Handeln"
+                            ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderList Acts model.character.skillList
+                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
+                        ]
+                    ]
+                ]
             , div [ class "column" ]
-                [ 
-                    div [ class "box" ] [
-                 showReadonlyInput model.character.knowledge "Wissen"
-                , renderList Knowledge model.character.skillList
-                , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
-                ]]
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.knowledge "Wissen" ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderList Knowledge model.character.skillList
+                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
+                        ]
+                    ]
+                ]
             , div [ class "column" ]
-                [ 
-                    div [ class "box" ] [
-                showReadonlyInput model.character.interact "Interagieren"
-                , renderList Interact model.character.skillList
-                , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
-                ]]
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.interact "Interagieren" ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderList Interact model.character.skillList
+                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
+                        ]
+                    ]
+                ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
         ]
@@ -471,11 +493,10 @@ pageCharacterSheet model =
                 , addInput "Muttersprache" "" ChangePrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
-                [
-                    figure [ class "image is-square" ]
-                    [
-                     img [ src model.character.picture ] []
-                ]]
+                [ figure [ class "image is-square" ]
+                    [ img [ src model.character.picture ] []
+                    ]
+                ]
             , div [ class "column" ]
                 [ addInput "Name" "" ChangeName model.character.name True
                 , addInput "Beruf" "" ChangeJob model.character.job True
@@ -498,22 +519,22 @@ pageCharacterSheet model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-            [ div [ class "box" ]
-                [ showReadonlyInput model.character.acts "Handeln"
-                , renderOrderedStaticList Acts model.character.skillList
-                ]
-                ]
-            , div [ class "column" ]
-            [ div [ class "box" ]
-                [ showReadonlyInput model.character.knowledge "Wissen"
-                , renderOrderedStaticList Knowledge model.character.skillList
-                ]
+                [ div [ class "box" ]
+                    [ renderHeaderAndPoints model.character.acts "Handeln"
+                    , renderOrderedStaticList Acts model.character.skillList
+                    ]
                 ]
             , div [ class "column" ]
-            [ div [ class "box" ]
-                [ showReadonlyInput model.character.interact "Interagieren"
-                , renderOrderedStaticList Interact model.character.skillList
+                [ div [ class "box" ]
+                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
+                    , renderOrderedStaticList Knowledge model.character.skillList
+                    ]
                 ]
+            , div [ class "column" ]
+                [ div [ class "box" ]
+                    [ renderHeaderAndPoints model.character.interact "Interagieren"
+                    , renderOrderedStaticList Interact model.character.skillList
+                    ]
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing)
@@ -556,7 +577,7 @@ renderTabs model =
 
 renderNextAndPreviousButtons : Model -> Maybe Page -> Maybe Page -> Html Msg
 renderNextAndPreviousButtons model previousPage nextPage =
-    div [ class "field  is-grouped is-grouped-centered" ]
+    div [ class "field  is-grouped is-grouped-centered no-print" ]
         [ div [ class "control" ]
             [ case previousPage of
                 Nothing ->
@@ -597,6 +618,7 @@ addInput title placeholderText inputMessage value readonlyInput =
               )
             ]
         ]
+
 
 renderOrderedStaticList : ListItemType -> List ListItem -> Html Msg
 renderOrderedStaticList itemType list =
@@ -639,10 +661,11 @@ createListNumbers listItem =
             ]
         ]
 
+
 renderHeaderAndFooter : (Model -> Html Msg) -> Model -> Html Msg
 renderHeaderAndFooter page model =
     div []
-        [ section [ class "hero is-primary" ]
+        [ section [ class "hero is-primary no-print" ]
             [ div [ class "hero-body" ]
                 [ div [ class "container" ]
                     [ h1 [ class "title" ]
@@ -654,26 +677,33 @@ renderHeaderAndFooter page model =
             , renderTabs model
             ]
         , section [ class "section" ] [ page model ]
-        , footer [ class "footer" ]
+        , footer [ class "footer no-print" ]
             [ div [ class "container" ]
                 [ div [ class "content has-text-centered" ]
                     [ p []
-                        [ text "How to be a hero character sheet creator by Kolja Lampe. The source code is licensed MIT."
+                        [ text "How to be a hero character sheet creator done with "
+                        , i [ class "fa fa-heart"] []
+                        , text " by Kolja Lampe. The source code is licensed MIT."
                         ]
+                    , p [] [
+                        text "You can find it on ",
+                        a [ href "https://github.com/Razzeee/htbah-character-creator/"] [ text "github" ]
+                    ]
                     ]
                 ]
             ]
         ]
 
 
-showReadonlyInput : Int -> String -> Html Msg
-showReadonlyInput value title =
-    div [ class "tags has-addons is-centered" ]
-        [ Html.span [ class "tag is-large" ]
-            [ text title ]
-        , Html.span [ class "tag is-primary is-large" ]
-            [ 
-                text (toString value)
+renderHeaderAndPoints : Int -> String -> Html Msg
+renderHeaderAndPoints value title =
+    div [ class "control" ]
+        [ div [ class "tags has-addons" ]
+            [ Html.span [ class "tag is-large" ]
+                [ text title ]
+            , Html.span [ class "tag is-primary is-large" ]
+                [ text (toString value)
+                ]
             ]
         ]
 
@@ -693,7 +723,7 @@ renderInputWithPlusButton value error inputEvent onClickEvent placeholderString 
     div []
         [ label [ class "label" ]
             [ text "" ]
-            , div [ class "field has-addons" ]
+        , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
                     (Text.defaultOptions inputEvent)
@@ -705,7 +735,10 @@ renderInputWithPlusButton value error inputEvent onClickEvent placeholderString 
                     [ i [ class "fa fa-plus" ] [] ]
                 ]
             ]
-        , if error /= "" then div [ class "notification is-danger" ] [
-            text error
-        ] else div [] []
+        , if error /= "" then
+            div [ class "notification is-danger" ]
+                [ text error
+                ]
+          else
+            div [] []
         ]
