@@ -30,8 +30,21 @@ type alias Model =
 
 type Page
     = PageBaseProperties
+    | PageAdditionalProperties
     | PageSkillpoints
     | PageCharacterSheet
+
+
+type StepMark
+    = Checkmark
+    | Final
+    | Blank
+
+
+type StepColors
+    = Active
+    | Completed
+    | None
 
 
 type ListItemType
@@ -370,7 +383,10 @@ view : Model -> Html Msg
 view model =
     case model.page of
         PageBaseProperties ->
-            renderHeaderAndFooter pageBaseproperties model
+            renderHeaderAndFooter pageBaseProperties model
+
+        PageAdditionalProperties ->
+            renderHeaderAndFooter pageAdditionalProperties model
 
         PageSkillpoints ->
             renderHeaderAndFooter pageSkillpoints model
@@ -379,46 +395,34 @@ view model =
             renderHeaderAndFooter pageCharacterSheet model
 
 
-pageBaseproperties : Model -> Html Msg
-pageBaseproperties model =
+pageBaseProperties : Model -> Html Msg
+pageBaseProperties model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Vorname" "Der Vorname deines Characters" ChangeFirstname model.character.firstName False ]
-            , div [ class "column" ]
-                [ addInput "Name" "Der Nachname deines Characters" ChangeName model.character.name False
+                [ addInput "Vorname" "Der Vorname deines Characters." ChangeFirstname model.character.firstName False
+                , addInput "Name" "Der Nachname deines Characters." ChangeName model.character.name False
+                , addInput "Alter" "Bist du schon ein Greiß oder eher ein junger Hüpfer?" ChangeAge model.character.age False
+                , addInput "Geschlecht" "Welchem Geschlecht gehört dein Charakter an?" ChangeSex model.character.sex False
                 ]
             ]
-        , div [ class "columns" ]
+        , (renderNextAndPreviousButtons model Nothing (Just PageAdditionalProperties))
+        ]
+
+
+pageAdditionalProperties : Model -> Html Msg
+pageAdditionalProperties model =
+    div [ class "container" ]
+        [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Statur" "Die Statur deines Characters" ChangeStature model.character.stature False
-                ]
-            , div [ class "column" ]
-                [ addInput "Muttersprache" "Die Muttersprache deines Characters" ChangePrimaryLanguage model.character.primaryLanguage False
-                ]
-            ]
-        , div [ class "columns" ]
-            [ div [ class "column" ]
-                [ addInput "Religion" "Deine Religion" ChangeReligion model.character.religion False
-                ]
-            , div [ class "column" ]
-                [ addInput "Geschlecht" "Mit welchem Geschlecht identifizierst du dich?" ChangeSex model.character.sex False
+                [ addInput "Beruf" "Dein Beruf, z.B. Busfahrer oder Drachenjäger." ChangeJob model.character.job False
+                , addInput "Statur" "Die Statur deines Characters, sollte zum Beruf passen." ChangeStature model.character.stature False
+                , addInput "Muttersprache" "Die Muttersprache deines Characters." ChangePrimaryLanguage model.character.primaryLanguage False
+                , addInput "Religion" "Deine Religion." ChangeReligion model.character.religion False
+                , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus False
                 ]
             ]
-        , div [ class "columns" ]
-            [ div [ class "column" ]
-                [ addInput "Alter" "Wie alt bist du?" ChangeAge model.character.age False
-                ]
-            , div [ class "column" ]
-                [ addInput "Beruf" "Dein Beruf" ChangeJob model.character.job False
-                ]
-            ]
-        , div [ class "columns" ]
-            [ div [ class "column" ]
-                [ addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus False
-                ]
-            ]
-        , (renderNextAndPreviousButtons model Nothing (Just PageSkillpoints))
+        , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageSkillpoints))
         ]
 
 
@@ -477,7 +481,7 @@ pageSkillpoints model =
                     ]
                 ]
             ]
-        , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageCharacterSheet))
+        , (renderNextAndPreviousButtons model (Just PageAdditionalProperties) (Just PageCharacterSheet))
         ]
 
 
@@ -541,35 +545,141 @@ pageCharacterSheet model =
         ]
 
 
-setTabActive : Model -> Page -> Attribute msg
-setTabActive model page =
-    if model.page == page then
-        class "is-active"
+leadsUpToCurrentPage : Page -> Page -> StepMark
+leadsUpToCurrentPage page currentPage =
+    case currentPage of
+        PageAdditionalProperties ->
+            if (page == PageBaseProperties) then
+                Checkmark
+            else if page == PageCharacterSheet then
+                Final
+            else
+                Blank
+
+        PageSkillpoints ->
+            if (page == PageBaseProperties || page == PageAdditionalProperties) then
+                Checkmark
+            else if page == PageCharacterSheet then
+                Final
+            else
+                Blank
+
+        PageCharacterSheet ->
+            if (page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints) then
+                Checkmark
+            else if page == PageCharacterSheet then
+                Final
+            else
+                Blank
+
+        _ ->
+            Blank
+
+
+getStepMarkHtml : StepMark -> Html msg
+getStepMarkHtml stepmark =
+    case stepmark of
+        Checkmark ->
+            Html.span [ class "icon" ]
+                [ i [ class "fa fa-check" ]
+                    []
+                ]
+
+        Final ->
+            Html.span [ class "icon" ]
+                [ i [ class "fa fa-flag" ]
+                    []
+                ]
+
+        Blank ->
+            text ""
+
+
+leadUpToCurrentPageColors : Page -> Page -> StepColors
+leadUpToCurrentPageColors page currentPage =
+    case currentPage of
+        PageBaseProperties ->
+            if (page == PageBaseProperties) then
+                Active
+            else
+                None
+
+        PageAdditionalProperties ->
+            if (page == PageAdditionalProperties) then
+                Active
+            else if page == PageBaseProperties then
+                Completed
+            else
+                None
+
+        PageSkillpoints ->
+            if (page == PageSkillpoints) then
+                Active
+            else if (page == PageBaseProperties || page == PageAdditionalProperties) then
+                Completed
+            else
+                None
+
+        PageCharacterSheet ->
+            if (page == PageCharacterSheet) then
+                Active
+            else if (page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints) then
+                Completed
+            else
+                None
+
+
+colorSteps : StepColors -> String
+colorSteps stepcolor =
+    if stepcolor == Completed then
+        "step-item is-completed is-primary"
+    else if stepcolor == Active then
+        "step-item is-active"
     else
-        class ""
+        "step-item"
 
 
-renderTabs : Model -> Html Msg
-renderTabs model =
-    div [ class "hero-foot" ]
-        [ nav [ class "tabs is-boxed is-fullwidth" ]
-            [ div [ class "container" ]
-                [ ul []
-                    [ li
-                        [ setTabActive model PageBaseProperties
-                        ]
-                        [ a []
-                            [ text "Charakter Eigenschaften" ]
-                        ]
-                    , li [ setTabActive model PageSkillpoints ]
-                        [ a []
-                            [ text "Begabungspunkte" ]
-                        ]
-                    , li [ setTabActive model PageCharacterSheet ]
-                        [ a []
-                            [ text "Charakterbogen" ]
-                        ]
-                    ]
+renderStepsOverview : Model -> Html Msg
+renderStepsOverview model =
+    div [ class "steps  no-print" ]
+        [ div [ class (leadUpToCurrentPageColors PageBaseProperties model.page |> colorSteps) ]
+            [ div [ class "step-marker" ]
+                [ leadsUpToCurrentPage PageBaseProperties model.page |> getStepMarkHtml ]
+            , div [ class "step-details" ]
+                [ p [ class "step-title" ]
+                    [ text "Wer bist du?" ]
+                , p []
+                    [ text "Ein paar grundlegende Infos über deinen Charakter." ]
+                ]
+            ]
+        , div [ class (leadUpToCurrentPageColors PageAdditionalProperties model.page |> colorSteps) ]
+            [ div [ class "step-marker" ]
+                [ leadsUpToCurrentPage PageAdditionalProperties model.page |> getStepMarkHtml ]
+            , div [ class "step-details" ]
+                [ p [ class "step-title" ]
+                    [ text "Was machst du?" ]
+                , p []
+                    [ text "Was ist dein Beruf, wie ist deine Religion? Erstelle deine Hintergrundgeschichte." ]
+                ]
+            ]
+        , div [ class (leadUpToCurrentPageColors PageSkillpoints model.page |> colorSteps) ]
+            [ div [ class "step-marker" ]
+                [ leadsUpToCurrentPage PageSkillpoints model.page |> getStepMarkHtml ]
+            , div [ class "step-details" ]
+                [ p [ class "step-title" ]
+                    [ text "Begabungspunkte" ]
+                , p []
+                    [ text "Es ist soweit, hier kannst du deine Begabungspunkte verteilen!" ]
+                ]
+            ]
+        , div [ class (leadUpToCurrentPageColors PageCharacterSheet model.page |> colorSteps) ]
+            [ div [ class "step-marker" ]
+                [ leadsUpToCurrentPage PageCharacterSheet model.page |> getStepMarkHtml ]
+            , div [ class "step-details" ]
+                [ p [ class "step-title" ]
+                    [ text "Charakterbogen" ]
+                , p []
+                    [ text "Dein fertiger Charakterbogen, zum drucken." ]
                 ]
             ]
         ]
@@ -674,9 +784,8 @@ renderHeaderAndFooter page model =
                         [ text "Characterblatt-Ersteller" ]
                     ]
                 ]
-            , renderTabs model
             ]
-        , section [ class "section" ] [ page model ]
+        , section [ class "section" ] [ renderStepsOverview model, page model ]
         , footer [ class "footer no-print" ]
             [ div [ class "container" ]
                 [ div [ class "content has-text-centered" ]
@@ -722,7 +831,7 @@ renderInputWithPlusButton : String -> String -> (String -> msg) -> msg -> String
 renderInputWithPlusButton value error inputEvent onClickEvent placeholderString =
     div []
         [ label [ class "label" ]
-            [ text "" ]
+            []
         , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
