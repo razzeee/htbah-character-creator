@@ -500,6 +500,7 @@ pageCharacterSheet model =
                 [ figure [ class "image is-square" ]
                     [ img [ src model.character.picture ] []
                     ]
+                    , addInput "Lebenspunkte" "" NoOp model.character.lifePoints True
                 ]
             , div [ class "column" ]
                 [ addInput "Name" "" ChangeName model.character.name True
@@ -507,19 +508,6 @@ pageCharacterSheet model =
                 , addInput "Religion" "" ChangeReligion model.character.religion True
                 , addInput "Familienstand" "" ChangeFamilystatus model.character.familyStatus True
                 ]
-            ]
-        , div [ class "columns" ]
-            [ div [ class "column" ]
-                []
-            , div [ class "column" ]
-                []
-            , div [ class "column" ]
-                [ addInput "Lebenspunkte" "" NoOp model.character.lifePoints True
-                ]
-            , div [ class "column" ]
-                []
-            , div [ class "column" ]
-                []
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
@@ -641,7 +629,7 @@ colorSteps stepcolor =
 
 renderStepsOverview : Model -> Html Msg
 renderStepsOverview model =
-    div [ class "steps  no-print" ]
+    div [ class "steps  no-print hide-mobile" ]
         [ div [ class (leadUpToCurrentPageColors PageBaseProperties model.page |> colorSteps) ]
             [ div [ class "step-marker" ]
                 [ leadsUpToCurrentPage PageBaseProperties model.page |> getStepMarkHtml ]
