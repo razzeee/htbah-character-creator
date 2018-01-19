@@ -140,7 +140,6 @@ if (TARGET_ENV === 'development') {
 
 if (TARGET_ENV === 'production') {
   console.log('=== Building for production')
-  console.log(prefix);
   module.exports = merge(common, {
     output: {
       path: path.resolve(__dirname, 'dist'),

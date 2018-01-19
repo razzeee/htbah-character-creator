@@ -139,7 +139,6 @@ type Msg
     | AddNewItemToList String ListItemType
 
 
-
 update msg model =
     case msg of
         ChangeStringField fieldType value ->
@@ -257,17 +256,15 @@ update msg model =
                 newInputItemError =
                     checkInputForErrorAndGenerateString newValue model.character.skillList
             in
-            case itemType of
-                Acts ->
-                    ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
-                    
-                Knowledge ->
-                    ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
-                    
-                Interact ->
-                    ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
+                case itemType of
+                    Acts ->
+                        ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
+                    Knowledge ->
+                        ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
+                    Interact ->
+                        ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
 
 calculateTotal : Character -> ListItemType -> Int
@@ -292,6 +289,7 @@ calculateSkillOutstanding character listItemType =
         |> List.length
     )
         * 10
+
 
 checkForDuplicate : List ListItem -> String -> Bool
 checkForDuplicate list name =
@@ -451,21 +449,36 @@ pageCharacterSheet model =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ div [ class "box" ]
-                    [ renderHeaderAndPoints model.character.acts "Handeln"
-                    , renderOrderedStaticList Acts model.character.skillList
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.acts "Handeln" ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderOrderedStaticList Acts model.character.skillList
+                        ]
                     ]
                 ]
             , div [ class "column" ]
-                [ div [ class "box" ]
-                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
-                    , renderOrderedStaticList Knowledge model.character.skillList
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.knowledge "Wissen" ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderOrderedStaticList Knowledge model.character.skillList
+                        ]
                     ]
                 ]
             , div [ class "column" ]
-                [ div [ class "box" ]
-                    [ renderHeaderAndPoints model.character.interact "Interagieren"
-                    , renderOrderedStaticList Interact model.character.skillList
+                [ div [ class "card" ]
+                    [ header [ class "card-header" ]
+                        [ p [ class "card-header-title is-centered" ]
+                            [ renderHeaderAndPoints model.character.interact "Interagieren" ]
+                        ]
+                    , div [ class "card-content" ]
+                        [ renderOrderedStaticList Interact model.character.skillList
+                        ]
                     ]
                 ]
             ]
@@ -638,6 +651,7 @@ renderNextAndPreviousButtons model previousPage nextPage =
             ]
         ]
 
+
 addInput : String -> String -> StringFieldType -> String -> Bool -> Html Msg
 addInput title placeholderText fieldType value readonlyInput =
     div [ class "field" ]
@@ -677,6 +691,7 @@ renderList itemType list =
             |> (List.map createListNumbers)
         )
 
+
 createListNumbers : ListItem -> Html Msg
 createListNumbers listItem =
     div []
@@ -706,8 +721,9 @@ renderHeaderAndFooter page model =
         [ section [ class "hero is-primary no-print" ]
             [ div [ class "hero-body" ]
                 [ div [ class "container" ]
-                    [ h1 [ class "title" ]
-                        [ text "How to be a hero" ]
+                    [ figure [ class "image is-128x128" ]
+                        [ img [ src "img/htbah.png" ] []
+                        ]
                     , h2 [ class "subtitle" ]
                         [ text "Characterblatt-Ersteller" ]
                     ]
