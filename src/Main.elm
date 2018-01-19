@@ -113,20 +113,25 @@ init =
     )
 
 
+type StringFieldType
+    = Name
+    | FirstName
+    | Stature
+    | PrimaryLanguage
+    | Religion
+    | Sex
+    | Age
+    | Job
+    | FamilyStatus
+    | NoOp
+
+
 
 -- UPDATE
 
 
 type Msg
-    = ChangeName String
-    | ChangeFirstname String
-    | ChangeStature String
-    | ChangePrimaryLanguage String
-    | ChangeReligion String
-    | ChangeSex String
-    | ChangeAge String
-    | ChangeJob String
-    | ChangeFamilystatus String
+    = ChangeStringField StringFieldType String
     | ChangePage Page
     | ChangeSkillList String (Maybe Int)
     | ChangeSkillListRemoveItem String
@@ -134,73 +139,45 @@ type Msg
     | ChangeActsAddNewItem String ListItemType
     | ChangeKnowledgeAddNewItem String ListItemType
     | ChangeInteractAddNewItem String ListItemType
-    | NoOp String
 
 
 update msg model =
     case msg of
-        ChangeName name ->
+        ChangeStringField fieldType value ->
             let
                 character =
                     model.character
             in
-                ( { model | character = { character | name = name } }, Cmd.none )
+                case fieldType of
+                    Name ->
+                        ( { model | character = { character | name = value } }, Cmd.none )
 
-        ChangeFirstname firstName ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | firstName = firstName } }, Cmd.none )
+                    FirstName ->
+                        ( { model | character = { character | firstName = value } }, Cmd.none )
 
-        ChangeStature stature ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | stature = stature } }, Cmd.none )
+                    Stature ->
+                        ( { model | character = { character | stature = value } }, Cmd.none )
 
-        ChangePrimaryLanguage primaryLanguage ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | primaryLanguage = primaryLanguage } }, Cmd.none )
+                    PrimaryLanguage ->
+                        ( { model | character = { character | primaryLanguage = value } }, Cmd.none )
 
-        ChangeReligion religion ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | religion = religion } }, Cmd.none )
+                    Religion ->
+                        ( { model | character = { character | religion = value } }, Cmd.none )
 
-        ChangeSex sex ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | sex = sex } }, Cmd.none )
+                    Sex ->
+                        ( { model | character = { character | sex = value } }, Cmd.none )
 
-        ChangeAge age ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | age = age } }, Cmd.none )
+                    Age ->
+                        ( { model | character = { character | age = value } }, Cmd.none )
 
-        ChangeJob job ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | job = job } }, Cmd.none )
+                    Job ->
+                        ( { model | character = { character | job = value } }, Cmd.none )
 
-        ChangeFamilystatus familyStatus ->
-            let
-                character =
-                    model.character
-            in
-                ( { model | character = { character | familyStatus = familyStatus } }, Cmd.none )
+                    FamilyStatus ->
+                        ( { model | character = { character | familyStatus = value } }, Cmd.none )
+
+                    NoOp ->
+                        ( model, Cmd.none )
 
         ChangeSkillList name value ->
             let
@@ -273,8 +250,10 @@ update msg model =
             case itemType of
                 Acts ->
                     ( { model | inputNewActsItem = value }, Cmd.none )
+
                 Knowledge ->
                     ( { model | inputNewKnowledgeItem = value }, Cmd.none )
+
                 Interact ->
                     ( { model | inputNewInteractItem = value }, Cmd.none )
 
@@ -324,9 +303,6 @@ update msg model =
 
         ChangePage newPage ->
             ( { model | page = newPage }, Cmd.none )
-
-        NoOp _ ->
-            ( model, Cmd.none )
 
 
 calculateTotal : Character -> ListItemType -> Int
@@ -398,10 +374,10 @@ pageBaseProperties model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Vorname" "Der Vorname deines Characters." ChangeFirstname model.character.firstName False
-                , addInput "Name" "Der Nachname deines Characters." ChangeName model.character.name False
-                , addInput "Alter" "Bist du schon ein Greiß oder eher ein junger Hüpfer?" ChangeAge model.character.age False
-                , addInput "Geschlecht" "Welchem Geschlecht gehört dein Charakter an?" ChangeSex model.character.sex False
+                [ addInput "Vorname" "Der Vorname deines Characters." FirstName model.character.firstName False
+                , addInput "Name" "Der Nachname deines Characters." Name model.character.name False
+                , addInput "Alter" "Bist du schon ein Greiß oder eher ein junger Hüpfer?" Age model.character.age False
+                , addInput "Geschlecht" "Welchem Geschlecht gehört dein Charakter an?" Sex model.character.sex False
                 ]
             ]
         , (renderNextAndPreviousButtons model Nothing (Just PageAdditionalProperties))
@@ -413,11 +389,11 @@ pageAdditionalProperties model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Beruf" "Dein Beruf, z.B. Busfahrer oder Drachenjäger." ChangeJob model.character.job False
-                , addInput "Statur" "Die Statur deines Characters, sollte zum Beruf passen." ChangeStature model.character.stature False
-                , addInput "Muttersprache" "Die Muttersprache deines Characters." ChangePrimaryLanguage model.character.primaryLanguage False
-                , addInput "Religion" "Deine Religion." ChangeReligion model.character.religion False
-                , addInput "Familienstand" "Wie ist dein Familienstand?" ChangeFamilystatus model.character.familyStatus False
+                [ addInput "Beruf" "Dein Beruf, z.B. Busfahrer oder Drachenjäger." Job model.character.job False
+                , addInput "Statur" "Die Statur deines Characters, sollte zum Beruf passen." Stature model.character.stature False
+                , addInput "Muttersprache" "Die Muttersprache deines Characters." PrimaryLanguage model.character.primaryLanguage False
+                , addInput "Religion" "Deine Religion." Religion model.character.religion False
+                , addInput "Familienstand" "Wie ist dein Familienstand?" FamilyStatus model.character.familyStatus False
                 ]
             ]
         , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageSkillpoints))
@@ -488,23 +464,23 @@ pageCharacterSheet model =
     div [ class "container" ]
         [ div [ class "columns" ]
             [ div [ class "column" ]
-                [ addInput "Vorname" "" ChangeFirstname model.character.firstName True
-                , addInput "Geschlecht" "" ChangeSex model.character.sex True
-                , addInput "Alter" "" ChangeAge model.character.age True
-                , addInput "Statur" "" ChangeStature model.character.stature True
-                , addInput "Muttersprache" "" ChangePrimaryLanguage model.character.primaryLanguage True
+                [ addInput "Vorname" "" FirstName model.character.firstName True
+                , addInput "Geschlecht" "" Sex model.character.sex True
+                , addInput "Alter" "" Age model.character.age True
+                , addInput "Statur" "" Stature model.character.stature True
+                , addInput "Muttersprache" "" PrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
                 [ figure [ class "image is-square" ]
                     [ img [ src model.character.picture ] []
                     ]
-                    , addInput "Lebenspunkte" "" NoOp model.character.lifePoints True
+                , addInput "Lebenspunkte" "" NoOp model.character.lifePoints True
                 ]
             , div [ class "column" ]
-                [ addInput "Name" "" ChangeName model.character.name True
-                , addInput "Beruf" "" ChangeJob model.character.job True
-                , addInput "Religion" "" ChangeReligion model.character.religion True
-                , addInput "Familienstand" "" ChangeFamilystatus model.character.familyStatus True
+                [ addInput "Name" "" Name model.character.name True
+                , addInput "Beruf" "" Job model.character.job True
+                , addInput "Religion" "" Religion model.character.religion True
+                , addInput "Familienstand" "" FamilyStatus model.character.familyStatus True
                 ]
             ]
         , div [ class "columns" ]
@@ -696,14 +672,14 @@ renderNextAndPreviousButtons model previousPage nextPage =
             ]
         ]
 
-addInput : String -> String -> (String -> msg) -> String -> Bool -> Html msg
-addInput title placeholderText inputMessage value readonlyInput =
+
+addInput title placeholderText fieldType value readonlyInput =
     div [ class "field" ]
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
             [ (Text.input
-                (Text.defaultOptions inputMessage)
+                (Text.defaultOptions (ChangeStringField fieldType))
                 [ class "input"
                 , type_ "text"
                 , placeholder placeholderText
@@ -811,6 +787,7 @@ convertMaybeIntToInt input =
 
         Just value ->
             value
+
 
 renderInputWithPlusButton : String -> String -> ListItemType -> Msg -> String -> Html Msg
 renderInputWithPlusButton value error itemType onClickEvent placeholderString =
