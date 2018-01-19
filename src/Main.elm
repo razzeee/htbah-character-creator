@@ -60,6 +60,19 @@ type alias ListItem =
     }
 
 
+type StringFieldType
+    = Name
+    | FirstName
+    | Stature
+    | PrimaryLanguage
+    | Religion
+    | Sex
+    | Age
+    | Job
+    | FamilyStatus
+    | NoOp
+
+
 type alias Character =
     { name : String
     , firstName : String
@@ -113,19 +126,6 @@ init =
     )
 
 
-type StringFieldType
-    = Name
-    | FirstName
-    | Stature
-    | PrimaryLanguage
-    | Religion
-    | Sex
-    | Age
-    | Job
-    | FamilyStatus
-    | NoOp
-
-
 
 -- UPDATE
 
@@ -133,12 +133,11 @@ type StringFieldType
 type Msg
     = ChangeStringField StringFieldType String
     | ChangePage Page
-    | ChangeSkillList String (Maybe Int)
-    | ChangeSkillListRemoveItem String
-    | InputNewItem ListItemType String
-    | ChangeActsAddNewItem String ListItemType
-    | ChangeKnowledgeAddNewItem String ListItemType
-    | ChangeInteractAddNewItem String ListItemType
+    | ChangeValueInList String (Maybe Int)
+    | RemoveItemFromList String
+    | ChangeInputOnNewItem ListItemType String
+    | AddNewItemToList String ListItemType
+
 
 
 update msg model =
@@ -179,7 +178,10 @@ update msg model =
                     NoOp ->
                         ( model, Cmd.none )
 
-        ChangeSkillList name value ->
+        ChangePage newPage ->
+            ( { model | page = newPage }, Cmd.none )
+
+        ChangeValueInList name value ->
             let
                 character =
                     model.character
@@ -214,7 +216,7 @@ update msg model =
             in
                 ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue, acts = actsTotal, knowledge = knowledgeTotal, interact = interactTotal } }, Cmd.none )
 
-        ChangeSkillListRemoveItem name ->
+        RemoveItemFromList name ->
             let
                 character =
                     model.character
@@ -224,29 +226,7 @@ update msg model =
             in
                 ( { model | character = { character | skillList = skillListNew } }, Cmd.none )
 
-        ChangeActsAddNewItem newValue itemType ->
-            let
-                character =
-                    model.character
-
-                newList =
-                    if checkIfValidNewItem newValue model.character.skillList then
-                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
-                    else
-                        model.character.skillList
-
-                newInputItem =
-                    if checkIfValidNewItem newValue model.character.skillList then
-                        ""
-                    else
-                        newValue
-
-                newInputItemError =
-                    checkInputForErrorAndGenerateString newValue model.character.skillList
-            in
-                ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
-
-        InputNewItem itemType value ->
+        ChangeInputOnNewItem itemType value ->
             case itemType of
                 Acts ->
                     ( { model | inputNewActsItem = value }, Cmd.none )
@@ -257,7 +237,7 @@ update msg model =
                 Interact ->
                     ( { model | inputNewInteractItem = value }, Cmd.none )
 
-        ChangeKnowledgeAddNewItem newValue itemType ->
+        AddNewItemToList newValue itemType ->
             let
                 character =
                     model.character
@@ -277,32 +257,17 @@ update msg model =
                 newInputItemError =
                     checkInputForErrorAndGenerateString newValue model.character.skillList
             in
-                ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
+            case itemType of
+                Acts ->
+                    ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
+                    
+                Knowledge ->
+                    ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
+                    
+                Interact ->
+                    ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
-        ChangeInteractAddNewItem newValue itemType ->
-            let
-                character =
-                    model.character
 
-                newList =
-                    if checkIfValidNewItem newValue model.character.skillList then
-                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
-                    else
-                        model.character.skillList
-
-                newInputItem =
-                    if checkIfValidNewItem newValue model.character.skillList then
-                        ""
-                    else
-                        newValue
-
-                newInputItemError =
-                    checkInputForErrorAndGenerateString newValue model.character.skillList
-            in
-                ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
-
-        ChangePage newPage ->
-            ( { model | page = newPage }, Cmd.none )
 
 
 calculateTotal : Character -> ListItemType -> Int
@@ -328,7 +293,7 @@ calculateSkillOutstanding character listItemType =
     )
         * 10
 
-
+checkForDuplicate : List ListItem -> String -> Bool
 checkForDuplicate list name =
     list
         |> List.map .name
@@ -340,6 +305,7 @@ checkIfValidNewItem value list =
     String.trim value /= "" && not (checkForDuplicate list value)
 
 
+checkInputForErrorAndGenerateString : String -> List ListItem -> String
 checkInputForErrorAndGenerateString value list =
     if String.trim value == "" then
         "Bitte geb einen Namen für die Begabung ein."
@@ -426,7 +392,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
-                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
+                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln Begabung"
                         ]
                     ]
                 ]
@@ -438,7 +404,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
-                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
+                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
                         ]
                     ]
                 ]
@@ -450,7 +416,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
-                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
+                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
                         ]
                     ]
                 ]
@@ -672,7 +638,7 @@ renderNextAndPreviousButtons model previousPage nextPage =
             ]
         ]
 
-
+addInput : String -> String -> StringFieldType -> String -> Bool -> Html Msg
 addInput title placeholderText fieldType value readonlyInput =
     div [ class "field" ]
         [ label [ class "label" ]
@@ -711,7 +677,7 @@ renderList itemType list =
             |> (List.map createListNumbers)
         )
 
-
+createListNumbers : ListItem -> Html Msg
 createListNumbers listItem =
     div []
         [ label [ class "label" ]
@@ -719,7 +685,7 @@ createListNumbers listItem =
         , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Number.input
-                    { onInput = ChangeSkillList listItem.name
+                    { onInput = ChangeValueInList listItem.name
                     , maxLength = Nothing
                     , maxValue = Just 100
                     , minValue = Just 0
@@ -729,7 +695,7 @@ createListNumbers listItem =
                     ]
                     (Just listItem.value)
                 ]
-            , div [ class "control" ] [ button [ class "button is-danger", onClick (ChangeSkillListRemoveItem listItem.name) ] [ i [ class "fa fa-trash" ] [] ] ]
+            , div [ class "control" ] [ button [ class "button is-danger", onClick (RemoveItemFromList listItem.name) ] [ i [ class "fa fa-trash" ] [] ] ]
             ]
         ]
 
@@ -797,7 +763,7 @@ renderInputWithPlusButton value error itemType onClickEvent placeholderString =
         , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
-                    (Text.defaultOptions (InputNewItem itemType))
+                    (Text.defaultOptions (ChangeInputOnNewItem itemType))
                     [ class "input", type_ "text", placeholder placeholderString ]
                     value
                 ]
