@@ -130,11 +130,9 @@ type Msg
     | ChangePage Page
     | ChangeSkillList String (Maybe Int)
     | ChangeSkillListRemoveItem String
-    | InputNewItemActs String
+    | InputNewItem ListItemType String
     | ChangeActsAddNewItem String ListItemType
-    | InputNewItemKnowledge String
     | ChangeKnowledgeAddNewItem String ListItemType
-    | InputNewItemInteract String
     | ChangeInteractAddNewItem String ListItemType
     | NoOp String
 
@@ -271,8 +269,14 @@ update msg model =
             in
                 ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
-        InputNewItemActs value ->
-            ( { model | inputNewActsItem = value }, Cmd.none )
+        InputNewItem itemType value ->
+            case itemType of
+                Acts ->
+                    ( { model | inputNewActsItem = value }, Cmd.none )
+                Knowledge ->
+                    ( { model | inputNewKnowledgeItem = value }, Cmd.none )
+                Interact ->
+                    ( { model | inputNewInteractItem = value }, Cmd.none )
 
         ChangeKnowledgeAddNewItem newValue itemType ->
             let
@@ -296,9 +300,6 @@ update msg model =
             in
                 ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
-        InputNewItemKnowledge value ->
-            ( { model | inputNewKnowledgeItem = value }, Cmd.none )
-
         ChangeInteractAddNewItem newValue itemType ->
             let
                 character =
@@ -320,9 +321,6 @@ update msg model =
                     checkInputForErrorAndGenerateString newValue model.character.skillList
             in
                 ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
-
-        InputNewItemInteract value ->
-            ( { model | inputNewInteractItem = value }, Cmd.none )
 
         ChangePage newPage ->
             ( { model | page = newPage }, Cmd.none )
@@ -438,7 +436,7 @@ pageSkillpoints model =
             [ label [ class "label has-text-centered" ]
                 [ text "Verbleibende Skillpunkte" ]
             , div [ class "control" ]
-                [ input [ class "input is-large has-text-centered", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
+                [ input [ class "input is-large has-text-centered is-primary", type_ "text", value (remainingSkillpoints model), readonly True, disabled True ]
                     []
                 ]
             ]
@@ -452,7 +450,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
-                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError InputNewItemActs (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
+                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (ChangeActsAddNewItem model.inputNewActsItem Acts) "Neue Handeln Begabung"
                         ]
                     ]
                 ]
@@ -464,7 +462,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
-                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError InputNewItemKnowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
+                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (ChangeKnowledgeAddNewItem model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
                         ]
                     ]
                 ]
@@ -476,7 +474,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
-                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError InputNewItemInteract (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
+                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (ChangeInteractAddNewItem model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
                         ]
                     ]
                 ]
@@ -682,7 +680,7 @@ renderNextAndPreviousButtons model previousPage nextPage =
                     (div [] [])
 
                 Just value ->
-                    (button [ class "button is-link", onClick (ChangePage value) ]
+                    (button [ class "button is-primary", onClick (ChangePage value) ]
                         [ text "Zurück" ]
                     )
             ]
@@ -692,13 +690,13 @@ renderNextAndPreviousButtons model previousPage nextPage =
                     (div [] [])
 
                 Just value ->
-                    (button [ class "button is-link", onClick (ChangePage value) ]
+                    (button [ class "button is-primary", onClick (ChangePage value) ]
                         [ text "Weiter" ]
                     )
             ]
         ]
 
-
+addInput : String -> String -> (String -> msg) -> String -> Bool -> Html msg
 addInput title placeholderText inputMessage value readonlyInput =
     div [ class "field" ]
         [ label [ class "label" ]
@@ -814,21 +812,20 @@ convertMaybeIntToInt input =
         Just value ->
             value
 
-
-renderInputWithPlusButton : String -> String -> (String -> msg) -> msg -> String -> Html msg
-renderInputWithPlusButton value error inputEvent onClickEvent placeholderString =
+renderInputWithPlusButton : String -> String -> ListItemType -> Msg -> String -> Html Msg
+renderInputWithPlusButton value error itemType onClickEvent placeholderString =
     div []
         [ label [ class "label" ]
             []
         , div [ class "field has-addons" ]
             [ div [ class "control is-expanded" ]
                 [ Text.input
-                    (Text.defaultOptions inputEvent)
+                    (Text.defaultOptions (InputNewItem itemType))
                     [ class "input", type_ "text", placeholder placeholderString ]
                     value
                 ]
             , div [ class "control" ]
-                [ button [ class "button is-info", onClick onClickEvent ]
+                [ button [ class "button is-primary", onClick onClickEvent ]
                     [ i [ class "fa fa-plus" ] [] ]
                 ]
             ]
