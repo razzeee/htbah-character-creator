@@ -718,7 +718,7 @@ renderHeaderAndFooter page model =
                         [ img [ src "img/htbah.png" ] []
                         ]
                     , h2 [ class "subtitle" ]
-                        [ text "Characterblatt-Ersteller" ]
+                        [ text "Characterbogen-Ersteller" ]
                     ]
                 ]
             ]
