@@ -7,6 +7,7 @@ import Input.Number as Number
 import Input.Text as Text
 import List.Extra exposing (..)
 
+
 main : Program Never Model Msg
 main =
     Html.program { init = init, view = view, update = update, subscriptions = always Sub.none }
@@ -383,8 +384,7 @@ pageSkillpoints model =
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ div [ class "card" ]
-                    [ 
-                        renderHeaderAndPoints model.character.acts "Handeln"
+                    [ renderHeaderAndPoints model.character.acts "Handeln"
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
                         , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln-Begabung hinzufügen"
@@ -393,8 +393,7 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ 
-                             renderHeaderAndPoints model.character.knowledge "Wissen" 
+                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
                         , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens-Begabung hinzufügen"
@@ -403,8 +402,7 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ 
-                            renderHeaderAndPoints model.character.interact "Interagieren" 
+                    [ renderHeaderAndPoints model.character.interact "Interagieren"
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
                         , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions-Begabung hinzufügen"
@@ -443,10 +441,7 @@ pageCharacterSheet model =
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.acts "Handeln" ]
-                        ]
+                    [ renderHeaderAndPoints model.character.acts "Handeln"
                     , div [ class "card-content" ]
                         [ renderOrderedStaticList Acts model.character.skillList
                         ]
@@ -454,10 +449,7 @@ pageCharacterSheet model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.knowledge "Wissen" ]
-                        ]
+                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
                     , div [ class "card-content" ]
                         [ renderOrderedStaticList Knowledge model.character.skillList
                         ]
@@ -465,10 +457,7 @@ pageCharacterSheet model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.interact "Interagieren" ]
-                        ]
+                    [ renderHeaderAndPoints model.character.interact "Interagieren"
                     , div [ class "card-content" ]
                         [ renderOrderedStaticList Interact model.character.skillList
                         ]
@@ -745,26 +734,24 @@ renderHeaderAndFooter page model =
 renderHeaderAndPoints : Int -> String -> Html Msg
 renderHeaderAndPoints value title =
     header [ class "card-header" ]
-            [ p [ class "card-header-title is-centered" ]
-                [ 
-                    div [ class "control" ]
-                    [ div [ class "tags has-addons" ]
-                        [ Html.span [ class "tag is-large" ]
-                            [ text title ]
-                        , Html.span [ class "tag is-primary is-large" ]
-                            [ text (toString value)
-                            ]
+        [ p [ class "card-header-title is-centered" ]
+            [ div [ class "control" ]
+                [ div [ class "tags has-addons" ]
+                    [ Html.span [ class "tag is-large" ]
+                        [ text title ]
+                    , Html.span [ class "tag is-primary is-large" ]
+                        [ text (toString value)
                         ]
                     ]
                 ]
-            ,  p [ class "card-header-icon is-centered" ]
-                [Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt. Für jeden Wert der über 80 ist, erhälst du 10 weitere Punkte in der jeweiligen Kategorie.") ]
-                    [ i [ class "fa fa-question-circle" ]
-                        []
-                    ]
+            ]
+        , p [ class "card-header-icon is-centered" ]
+            [ Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt. Für jeden Wert der über 80 ist, erhälst du 10 weitere Punkte in der jeweiligen Kategorie.") ]
+                [ i [ class "fa fa-question-circle" ]
+                    []
                 ]
             ]
-
+        ]
 
 
 convertMaybeIntToInt : Maybe number -> number
