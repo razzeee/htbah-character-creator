@@ -7,7 +7,7 @@ import Input.Number as Number
 import Input.Text as Text
 import List.Extra exposing (..)
 
-
+main : Program Never Model Msg
 main =
     Html.program { init = init, view = view, update = update, subscriptions = always Sub.none }
 
@@ -390,7 +390,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
-                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln Begabung"
+                        , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln-Begabung hinzufügen"
                         ]
                     ]
                 ]
@@ -402,7 +402,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
-                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens Begabung"
+                        , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens-Begabung hinzufügen"
                         ]
                     ]
                 ]
@@ -414,7 +414,7 @@ pageSkillpoints model =
                         ]
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
-                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions Begabung"
+                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions-Begabung hinzufügen"
                         ]
                     ]
                 ]

@@ -11,6 +11,7 @@
     "babel-preset-env": "^1.6.1",
     "bulma": "^0.6.2",
     "bulma-steps": "^0.1.9",
+    "bulma-tooltip": "^0.1.1",
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.3.1",
     "css-loader": "^0.28.9",
