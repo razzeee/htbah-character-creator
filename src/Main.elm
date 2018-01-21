@@ -383,11 +383,8 @@ pageSkillpoints model =
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.acts "Handeln"
-                            ]
-                        ]
+                    [ 
+                        renderHeaderAndPoints model.character.acts "Handeln"
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
                         , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln-Begabung hinzufügen"
@@ -396,10 +393,8 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.knowledge "Wissen" ]
-                        ]
+                    [ 
+                             renderHeaderAndPoints model.character.knowledge "Wissen" 
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
                         , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens-Begabung hinzufügen"
@@ -408,10 +403,8 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ header [ class "card-header" ]
-                        [ p [ class "card-header-title is-centered" ]
-                            [ renderHeaderAndPoints model.character.interact "Interagieren" ]
-                        ]
+                    [ 
+                            renderHeaderAndPoints model.character.interact "Interagieren" 
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
                         , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions-Begabung hinzufügen"
@@ -741,6 +734,7 @@ renderHeaderAndFooter page model =
                     , p []
                         [ text "You can find it on "
                         , a [ href "https://github.com/Razzeee/htbah-character-creator/" ] [ text "github" ]
+                        , text "."
                         ]
                     ]
                 ]
@@ -750,15 +744,27 @@ renderHeaderAndFooter page model =
 
 renderHeaderAndPoints : Int -> String -> Html Msg
 renderHeaderAndPoints value title =
-    div [ class "control" ]
-        [ div [ class "tags has-addons" ]
-            [ Html.span [ class "tag is-large" ]
-                [ text title ]
-            , Html.span [ class "tag is-primary is-large" ]
-                [ text (toString value)
+    header [ class "card-header" ]
+            [ p [ class "card-header-title is-centered" ]
+                [ 
+                    div [ class "control" ]
+                    [ div [ class "tags has-addons" ]
+                        [ Html.span [ class "tag is-large" ]
+                            [ text title ]
+                        , Html.span [ class "tag is-primary is-large" ]
+                            [ text (toString value)
+                            ]
+                        ]
+                    ]
+                ]
+            ,  p [ class "card-header-icon is-centered" ]
+                [Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt. Für jeden Wert der über 80 ist, erhälst du 10 weitere Punkte in der jeweiligen Kategorie.") ]
+                    [ i [ class "fa fa-question-circle" ]
+                        []
+                    ]
                 ]
             ]
-        ]
+
 
 
 convertMaybeIntToInt : Maybe number -> number
