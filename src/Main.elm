@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (..)
+import Random
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Input.Number as Number
@@ -71,6 +72,7 @@ type StringFieldType
     | Age
     | Job
     | FamilyStatus
+    | Initiative
     | NoOp
 
 
@@ -87,11 +89,16 @@ type alias Character =
     , lifePoints : String
     , skillList : List ListItem
     , knowledge : Int
+    , knowledgeGBP : Int
     , interact : Int
+    , interactGBP : Int
     , acts : Int
+    , actsGBP : Int
     , assignedSkillpoints : Int
     , spendableSkillpoints : Int
     , picture : String
+    , initiativeRoll : Int
+    , initiativeTotal : String
     }
 
 
@@ -113,8 +120,13 @@ init =
             0
             0
             0
-            500
+            0
+            0
+            0
+            400
             "img/character.jpg"
+            0
+            "0"
         )
         PageBaseProperties
         ""
@@ -138,6 +150,8 @@ type Msg
     | RemoveItemFromList String
     | ChangeInputOnNewItem ListItemType String
     | AddNewItemToList String ListItemType
+    | Roll
+    | NewRoll Int
 
 
 update msg model =
@@ -175,11 +189,14 @@ update msg model =
                     FamilyStatus ->
                         ( { model | character = { character | familyStatus = value } }, Cmd.none )
 
+                    Initiative ->
+                        ( { model | character = { character | initiativeTotal = value } }, Cmd.none )
+
                     NoOp ->
                         ( model, Cmd.none )
 
         ChangePage newPage ->
-            ( { model | page = newPage }, Cmd.none )
+            update Roll { model | page = newPage }
 
         ChangeValueInList name value ->
             let
@@ -200,21 +217,44 @@ update msg model =
                 actsTotal =
                     calculateTotal character Acts
 
+                actsGBP =
+                    round (toFloat actsTotal / 10)
+
                 {--Knowledge --}
                 knowledgeTotal =
                     calculateTotal character Knowledge
+
+                knowledgeGBP =
+                    round (toFloat knowledgeTotal / 10)
 
                 {--Interact --}
                 interactTotal =
                     calculateTotal character Interact
 
+                interactGBP =
+                    round (toFloat interactTotal / 10)
+
                 skillListNew =
-                    if sumAndCurrentValue <= 500 then
+                    if sumAndCurrentValue <= 400 then
                         List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = convertMaybeIntToInt value }) model.character.skillList
                     else
                         model.character.skillList
             in
-                ( { model | character = { character | skillList = skillListNew, assignedSkillpoints = sumAndCurrentValue, acts = actsTotal, knowledge = knowledgeTotal, interact = interactTotal } }, Cmd.none )
+                ( { model
+                    | character =
+                        { character
+                            | skillList = skillListNew
+                            , assignedSkillpoints = sumAndCurrentValue
+                            , acts = actsTotal
+                            , actsGBP = actsGBP
+                            , knowledge = knowledgeTotal
+                            , knowledgeGBP = knowledgeGBP
+                            , interact = interactTotal
+                            , interactGBP = interactGBP
+                        }
+                  }
+                , Cmd.none
+                )
 
         RemoveItemFromList name ->
             let
@@ -267,29 +307,31 @@ update msg model =
                     Interact ->
                         ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
 
+        Roll ->
+            ( model, Random.generate NewRoll (Random.int 1 10) )
+
+        NewRoll newRoll ->
+            let
+                character =
+                    model.character
+
+                initativeTotal =
+                    toString (newRoll + character.acts)
+            in
+                ( { model | character = { character | initiativeRoll = newRoll, initiativeTotal = initativeTotal } }, Cmd.none )
+
 
 calculateTotal : Character -> ListItemType -> Int
 calculateTotal character listItemType =
-    (calculateSkillDivided character listItemType) + (calculateSkillOutstanding character listItemType)
-
-
-calculateSkillDivided : Character -> ListItemType -> Int
-calculateSkillDivided character listItemType =
-    (character.skillList
-        |> List.filter (\value -> value.itemType == listItemType)
-        |> List.map .value
-        |> List.sum
-    )
-        // 10
-
-
-calculateSkillOutstanding : Character -> ListItemType -> Int
-calculateSkillOutstanding character listItemType =
-    (character.skillList
-        |> List.filter (\value -> value.itemType == listItemType && value.value >= 80)
-        |> List.length
-    )
-        * 10
+    round
+        ((character.skillList
+            |> List.filter (\value -> value.itemType == listItemType)
+            |> List.map .value
+            |> List.sum
+            |> toFloat
+         )
+            / 10
+        )
 
 
 checkForDuplicate : List ListItem -> String -> Bool
@@ -384,7 +426,7 @@ pageSkillpoints model =
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.acts "Handeln"
+                    [ renderHeaderAndPoints model.character.acts model.character.actsGBP "Handeln"
                     , div [ class "card-content" ]
                         [ renderList Acts model.character.skillList
                         , renderInputWithPlusButton model.inputNewActsItem model.inputNewActsItemError Acts (AddNewItemToList model.inputNewActsItem Acts) "Neue Handeln-Begabung hinzufügen"
@@ -393,7 +435,7 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
+                    [ renderHeaderAndPoints model.character.knowledge model.character.knowledgeGBP "Wissen"
                     , div [ class "card-content" ]
                         [ renderList Knowledge model.character.skillList
                         , renderInputWithPlusButton model.inputNewKnowledgeItem model.inputNewKnowledgeItemError Knowledge (AddNewItemToList model.inputNewKnowledgeItem Knowledge) "Neue Wissens-Begabung hinzufügen"
@@ -402,7 +444,7 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.interact "Interagieren"
+                    [ renderHeaderAndPoints model.character.interact model.character.interactGBP "Interagieren"
                     , div [ class "card-content" ]
                         [ renderList Interact model.character.skillList
                         , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions-Begabung hinzufügen"
@@ -436,30 +478,31 @@ pageCharacterSheet model =
                 , addInput "Beruf" "" Job model.character.job True
                 , addInput "Religion" "" Religion model.character.religion True
                 , addInput "Familienstand" "" FamilyStatus model.character.familyStatus True
+                , addInput "Initiative" "" Initiative model.character.initiativeTotal True
                 ]
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.acts "Handeln"
+                    [ renderHeaderAndPoints model.character.acts model.character.actsGBP "Handeln"
                     , div [ class "card-content" ]
-                        [ renderOrderedStaticList Acts model.character.skillList
+                        [ renderOrderedStaticList Acts model.character
                         ]
                     ]
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.knowledge "Wissen"
+                    [ renderHeaderAndPoints model.character.knowledge model.character.knowledgeGBP "Wissen"
                     , div [ class "card-content" ]
-                        [ renderOrderedStaticList Knowledge model.character.skillList
+                        [ renderOrderedStaticList Knowledge model.character
                         ]
                     ]
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.interact "Interagieren"
+                    [ renderHeaderAndPoints model.character.interact model.character.interactGBP "Interagieren"
                     , div [ class "card-content" ]
-                        [ renderOrderedStaticList Interact model.character.skillList
+                        [ renderOrderedStaticList Interact model.character
                         ]
                     ]
                 ]
@@ -654,15 +697,27 @@ addInput title placeholderText fieldType value readonlyInput =
         ]
 
 
-renderOrderedStaticList : ListItemType -> List ListItem -> Html Msg
-renderOrderedStaticList itemType list =
-    div []
-        (list
-            |> List.filter (\item -> item.itemType == itemType)
-            |> List.sortBy .value
-            |> List.reverse
-            |> (List.map (\input -> addInput input.name "" NoOp (toString input.value) True))
-        )
+renderOrderedStaticList : ListItemType -> Character -> Html Msg
+renderOrderedStaticList itemType character =
+    let
+        typeBonus =
+            case itemType of
+                Acts ->
+                    character.acts
+
+                Knowledge ->
+                    character.knowledge
+
+                Interact ->
+                    character.interact
+    in
+        div []
+            (character.skillList
+                |> List.filter (\item -> item.itemType == itemType)
+                |> List.sortBy .value
+                |> List.reverse
+                |> (List.map (\input -> addInput input.name "" NoOp (toString (clamp 0 100 (input.value + typeBonus))) True))
+            )
 
 
 renderList : ListItemType -> List ListItem -> Html Msg
@@ -731,22 +786,37 @@ renderHeaderAndFooter page model =
         ]
 
 
-renderHeaderAndPoints : Int -> String -> Html Msg
-renderHeaderAndPoints value title =
+renderHeaderAndPoints : Int -> Int -> String -> Html Msg
+renderHeaderAndPoints value gbpValue title =
     header [ class "card-header" ]
         [ p [ class "card-header-title is-centered" ]
             [ div [ class "control" ]
-                [ div [ class "tags has-addons" ]
-                    [ Html.span [ class "tag is-large" ]
-                        [ text title ]
-                    , Html.span [ class "tag is-primary is-large" ]
-                        [ text (toString value)
+                [ div [ class "media-content" ]
+                    [ p
+                        [ class "title is-4" ]
+                        [ div
+                            [ class "tags has-addons" ]
+                            [ Html.span [ class "tag is-large" ]
+                                [ text title ]
+                            , Html.span [ class "tag is-primary is-large" ]
+                                [ text (toString value)
+                                ]
+                            ]
+                        ]
+                    , p [ class "subtitle is-6" ]
+                        [ div [ class "tags has-addons" ]
+                            [ Html.span [ class "tag" ]
+                                [ text "Geistesblitzpunkte" ]
+                            , Html.span [ class "tag is-primary" ]
+                                [ text (toString gbpValue)
+                                ]
+                            ]
                         ]
                     ]
                 ]
             ]
         , p [ class "card-header-icon is-centered" ]
-            [ Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt. Für jeden Wert der über 80 ist, erhälst du 10 weitere Punkte in der jeweiligen Kategorie.") ]
+            [ Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt.") ]
                 [ i [ class "fa fa-question-circle" ]
                     []
                 ]
