@@ -72,7 +72,6 @@ type StringFieldType
     | Age
     | Job
     | FamilyStatus
-    | Initiative
     | NoOp
 
 
@@ -97,8 +96,6 @@ type alias Character =
     , assignedSkillpoints : Int
     , spendableSkillpoints : Int
     , picture : String
-    , initiativeRoll : Int
-    , initiativeTotal : String
     }
 
 
@@ -125,8 +122,6 @@ init =
             0
             400
             "img/character.jpg"
-            0
-            "0"
         )
         PageBaseProperties
         ""
@@ -150,8 +145,6 @@ type Msg
     | RemoveItemFromList String
     | ChangeInputOnNewItem ListItemType String
     | AddNewItemToList String ListItemType
-    | Roll
-    | NewRoll Int
 
 
 update msg model =
@@ -189,14 +182,11 @@ update msg model =
                     FamilyStatus ->
                         ( { model | character = { character | familyStatus = value } }, Cmd.none )
 
-                    Initiative ->
-                        ( { model | character = { character | initiativeTotal = value } }, Cmd.none )
-
                     NoOp ->
                         ( model, Cmd.none )
 
         ChangePage newPage ->
-            update Roll { model | page = newPage }
+            ( { model | page = newPage }, Cmd.none )
 
         ChangeValueInList name value ->
             let
@@ -306,20 +296,6 @@ update msg model =
 
                     Interact ->
                         ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
-
-        Roll ->
-            ( model, Random.generate NewRoll (Random.int 1 10) )
-
-        NewRoll newRoll ->
-            let
-                character =
-                    model.character
-
-                initativeTotal =
-                    toString (newRoll + character.acts)
-            in
-                ( { model | character = { character | initiativeRoll = newRoll, initiativeTotal = initativeTotal } }, Cmd.none )
-
 
 calculateTotal : Character -> ListItemType -> Int
 calculateTotal character listItemType =
@@ -478,7 +454,6 @@ pageCharacterSheet model =
                 , addInput "Beruf" "" Job model.character.job True
                 , addInput "Religion" "" Religion model.character.religion True
                 , addInput "Familienstand" "" FamilyStatus model.character.familyStatus True
-                , addInput "Initiative" "" Initiative model.character.initiativeTotal True
                 ]
             ]
         , div [ class "columns" ]
