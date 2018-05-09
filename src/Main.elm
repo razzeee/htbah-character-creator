@@ -582,7 +582,7 @@ colorSteps stepcolor =
 
 renderStepsOverview : Model -> Html Msg
 renderStepsOverview model =
-    div [ class "steps  no-print hide-mobile" ]
+    div [ class "steps no-print hide-mobile" ]
         [ div [ class (leadUpToCurrentPageColors PageBaseProperties model.page |> colorSteps) ]
             [ div [ class "step-marker" ]
                 [ leadsUpToCurrentPage PageBaseProperties model.page |> getStepMarkHtml ]
@@ -790,9 +790,9 @@ renderHeaderAndPoints value gbpValue title =
                     ]
                 ]
             ]
-        , p [ class "card-header-icon is-centered" ]
-            [ Html.span [ class "icon tooltip is-tooltip-multiline", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt.") ]
-                [ i [ class "fa fa-question-circle" ]
+        , p [ class "card-header-icon is-centered no-print" ]
+            [ Html.span [ class "icon tooltip is-tooltip-multiline no-print", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt.") ]
+                [ i [ class "fa fa-question-circle  no-print" ]
                     []
                 ]
             ]
