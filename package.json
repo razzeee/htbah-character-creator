@@ -1,37 +1,19 @@
 {
   "scripts": {
-    "build": "webpack -p",
-    "start": "webpack-dev-server --hot",
-    "lint": "./node_modules/.bin/eslint src/**/*.js"
+    "lint": "./node_modules/.bin/eslint src/**/*.js",
+    "dev": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && parcel src/index.html",
+    "build": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && && parcel build src/index.html"
   },
   "devDependencies": {
-    "autoprefixer": "^8.4.1",
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
-    "babel-preset-env": "^1.6.1",
     "bulma": "^0.7.1",
     "bulma-steps": "^1.0.2",
     "bulma-tooltip": "^1.0.4",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.1",
-    "css-loader": "^0.28.11",
-    "elm-hot-loader": "^0.5.4",
-    "elm-webpack-loader": "^4.5.0",
-    "eslint": "^4.19.1",
-    "extract-text-webpack-plugin": "^3.0.2",
-    "file-loader": "^1.1.11",
-    "global-prefix": "^1.0.2",
-    "html-webpack-plugin": "^3.2.0",
-    "node-sass": "^4.9.0",
-    "open-browser-webpack-plugin": "0.0.5",
-    "postcss-loader": "^2.1.4",
-    "sass-loader": "^6.0.7",
-    "style-loader": "^0.20.2",
-    "url-loader": "^1.0.1",
-    "webpack": "^3.10.0",
-    "webpack-build-notifier": "^0.1.25",
-    "webpack-dev-server": "^2.11.0",
-    "webpack-merge": "^4.1.2"
+    "cpx": "^1.5.0",
+    "elm-hot": "^1.0.1",
+    "elm-webpack-loader": "^5.0.0",
+    "eslint": "^5.12.1",
+    "parcel-bundler": "^1.11.0",
+    "sass": "^1.16.1"
   },
   "license": "MIT",
   "dependencies": {}
