@@ -9,12 +9,10 @@
     "bulma-steps": "^1.0.2",
     "bulma-tooltip": "^1.0.4",
     "cpx": "^1.5.0",
-    "elm-hot": "^1.0.1",
-    "elm-webpack-loader": "^5.0.0",
     "eslint": "^5.12.1",
+    "node-elm-compiler": "^5.0.1",
     "parcel-bundler": "^1.11.0",
-    "sass": "^1.16.1",
-    "request": "^2.88.0"
+    "sass": "^1.16.1"
   },
   "license": "MIT",
   "dependencies": {}
