@@ -13,7 +13,8 @@
     "elm-webpack-loader": "^5.0.0",
     "eslint": "^5.12.1",
     "parcel-bundler": "^1.11.0",
-    "sass": "^1.16.1"
+    "sass": "^1.16.1",
+    "request": "^2.88.0"
   },
   "license": "MIT",
   "dependencies": {}
