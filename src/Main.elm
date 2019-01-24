@@ -1,17 +1,18 @@
-module Main exposing (..)
+module Main exposing (Character, ListItem, ListItemType(..), Model, Msg(..), Page(..), StepColors(..), StepMark(..), StringFieldType(..), addInput, calculateTotal, checkForDuplicate, checkIfValidNewItem, checkInputForErrorAndGenerateString, colorSteps, convertMaybeIntToInt, createListNumbers, getStepMarkHtml, init, leadUpToCurrentPageColors, leadsUpToCurrentPage, main, pageAdditionalProperties, pageBaseProperties, pageCharacterSheet, pageSkillpoints, remainingSkillpoints, renderHeaderAndFooter, renderHeaderAndPoints, renderInputWithPlusButton, renderList, renderNextAndPreviousButtons, renderOrderedStaticList, renderStepsOverview, update, view)
 
+import Browser
 import Html exposing (..)
-import Random
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Input.Number as Number
 import Input.Text as Text
 import List.Extra exposing (..)
+import Random
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program { init = init, view = view, update = update, subscriptions = always Sub.none }
+    Browser.element { init = init, view = view, update = update, subscriptions = always Sub.none }
 
 
 
@@ -99,8 +100,8 @@ type alias Character =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model
         (Character ""
             ""
@@ -154,36 +155,36 @@ update msg model =
                 character =
                     model.character
             in
-                case fieldType of
-                    Name ->
-                        ( { model | character = { character | name = value } }, Cmd.none )
+            case fieldType of
+                Name ->
+                    ( { model | character = { character | name = value } }, Cmd.none )
 
-                    FirstName ->
-                        ( { model | character = { character | firstName = value } }, Cmd.none )
+                FirstName ->
+                    ( { model | character = { character | firstName = value } }, Cmd.none )
 
-                    Stature ->
-                        ( { model | character = { character | stature = value } }, Cmd.none )
+                Stature ->
+                    ( { model | character = { character | stature = value } }, Cmd.none )
 
-                    PrimaryLanguage ->
-                        ( { model | character = { character | primaryLanguage = value } }, Cmd.none )
+                PrimaryLanguage ->
+                    ( { model | character = { character | primaryLanguage = value } }, Cmd.none )
 
-                    Religion ->
-                        ( { model | character = { character | religion = value } }, Cmd.none )
+                Religion ->
+                    ( { model | character = { character | religion = value } }, Cmd.none )
 
-                    Sex ->
-                        ( { model | character = { character | sex = value } }, Cmd.none )
+                Sex ->
+                    ( { model | character = { character | sex = value } }, Cmd.none )
 
-                    Age ->
-                        ( { model | character = { character | age = value } }, Cmd.none )
+                Age ->
+                    ( { model | character = { character | age = value } }, Cmd.none )
 
-                    Job ->
-                        ( { model | character = { character | job = value } }, Cmd.none )
+                Job ->
+                    ( { model | character = { character | job = value } }, Cmd.none )
 
-                    FamilyStatus ->
-                        ( { model | character = { character | familyStatus = value } }, Cmd.none )
+                FamilyStatus ->
+                    ( { model | character = { character | familyStatus = value } }, Cmd.none )
 
-                    NoOp ->
-                        ( model, Cmd.none )
+                NoOp ->
+                    ( model, Cmd.none )
 
         ChangePage newPage ->
             ( { model | page = newPage }, Cmd.none )
@@ -196,7 +197,7 @@ update msg model =
                 {--Total --}
                 summedValues =
                     character.skillList
-                        |> List.filter (\value -> value.name /= name)
+                        |> List.filter (\value2 -> value2.name /= name)
                         |> List.map .value
                         |> List.sum
 
@@ -226,25 +227,26 @@ update msg model =
 
                 skillListNew =
                     if sumAndCurrentValue <= 400 then
-                        List.Extra.updateIf (\value -> value.name == name) (\input -> { input | value = convertMaybeIntToInt value }) model.character.skillList
+                        List.Extra.updateIf (\value3 -> value3.name == name) (\input -> { input | value = convertMaybeIntToInt value }) model.character.skillList
+
                     else
                         model.character.skillList
             in
-                ( { model
-                    | character =
-                        { character
-                            | skillList = skillListNew
-                            , assignedSkillpoints = sumAndCurrentValue
-                            , acts = actsTotal
-                            , actsGBP = actsGBP
-                            , knowledge = knowledgeTotal
-                            , knowledgeGBP = knowledgeGBP
-                            , interact = interactTotal
-                            , interactGBP = interactGBP
-                        }
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | character =
+                    { character
+                        | skillList = skillListNew
+                        , assignedSkillpoints = sumAndCurrentValue
+                        , acts = actsTotal
+                        , actsGBP = actsGBP
+                        , knowledge = knowledgeTotal
+                        , knowledgeGBP = knowledgeGBP
+                        , interact = interactTotal
+                        , interactGBP = interactGBP
+                    }
+              }
+            , Cmd.none
+            )
 
         RemoveItemFromList name ->
             let
@@ -254,7 +256,7 @@ update msg model =
                 skillListNew =
                     List.filter (\value -> value.name /= name) model.character.skillList
             in
-                ( { model | character = { character | skillList = skillListNew } }, Cmd.none )
+            ( { model | character = { character | skillList = skillListNew } }, Cmd.none )
 
         ChangeInputOnNewItem itemType value ->
             case itemType of
@@ -274,28 +276,31 @@ update msg model =
 
                 newList =
                     if checkIfValidNewItem newValue model.character.skillList then
-                        List.append model.character.skillList [ (ListItem newValue 0 itemType) ]
+                        List.append model.character.skillList [ ListItem newValue 0 itemType ]
+
                     else
                         model.character.skillList
 
                 newInputItem =
                     if checkIfValidNewItem newValue model.character.skillList then
                         ""
+
                     else
                         newValue
 
                 newInputItemError =
                     checkInputForErrorAndGenerateString newValue model.character.skillList
             in
-                case itemType of
-                    Acts ->
-                        ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
+            case itemType of
+                Acts ->
+                    ( { model | character = { character | skillList = newList }, inputNewActsItem = newInputItem, inputNewActsItemError = newInputItemError }, Cmd.none )
 
-                    Knowledge ->
-                        ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
+                Knowledge ->
+                    ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
-                    Interact ->
-                        ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
+                Interact ->
+                    ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
+
 
 calculateTotal : Character -> ListItemType -> Int
 calculateTotal character listItemType =
@@ -326,8 +331,10 @@ checkInputForErrorAndGenerateString : String -> List ListItem -> String
 checkInputForErrorAndGenerateString value list =
     if String.trim value == "" then
         "Bitte geb einen Namen für die Begabung ein."
-    else if (checkForDuplicate list value) then
+
+    else if checkForDuplicate list value then
         "Begabung mit dem Namen bereits vorhanden."
+
     else
         ""
 
@@ -363,7 +370,7 @@ pageBaseProperties model =
                 , addInput "Geschlecht" "Welchem Geschlecht gehört dein Charakter an?" Sex model.character.sex False
                 ]
             ]
-        , (renderNextAndPreviousButtons model Nothing (Just PageAdditionalProperties))
+        , renderNextAndPreviousButtons model Nothing (Just PageAdditionalProperties)
         ]
 
 
@@ -379,13 +386,13 @@ pageAdditionalProperties model =
                 , addInput "Familienstand" "Wie ist dein Familienstand?" FamilyStatus model.character.familyStatus False
                 ]
             ]
-        , (renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageSkillpoints))
+        , renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageSkillpoints)
         ]
 
 
 remainingSkillpoints : Model -> String
 remainingSkillpoints model =
-    toString (model.character.spendableSkillpoints - model.character.assignedSkillpoints)
+    String.fromInt (model.character.spendableSkillpoints - model.character.assignedSkillpoints)
 
 
 pageSkillpoints : Model -> Html Msg
@@ -428,7 +435,7 @@ pageSkillpoints model =
                     ]
                 ]
             ]
-        , (renderNextAndPreviousButtons model (Just PageAdditionalProperties) (Just PageCharacterSheet))
+        , renderNextAndPreviousButtons model (Just PageAdditionalProperties) (Just PageCharacterSheet)
         ]
 
 
@@ -482,7 +489,7 @@ pageCharacterSheet model =
                     ]
                 ]
             ]
-        , (renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing)
+        , renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing
         ]
 
 
@@ -490,26 +497,32 @@ leadsUpToCurrentPage : Page -> Page -> StepMark
 leadsUpToCurrentPage page currentPage =
     case currentPage of
         PageAdditionalProperties ->
-            if (page == PageBaseProperties) then
+            if page == PageBaseProperties then
                 Checkmark
+
             else if page == PageCharacterSheet then
                 Final
+
             else
                 Blank
 
         PageSkillpoints ->
-            if (page == PageBaseProperties || page == PageAdditionalProperties) then
+            if page == PageBaseProperties || page == PageAdditionalProperties then
                 Checkmark
+
             else if page == PageCharacterSheet then
                 Final
+
             else
                 Blank
 
         PageCharacterSheet ->
-            if (page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints) then
+            if page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints then
                 Checkmark
+
             else if page == PageCharacterSheet then
                 Final
+
             else
                 Blank
 
@@ -540,32 +553,39 @@ leadUpToCurrentPageColors : Page -> Page -> StepColors
 leadUpToCurrentPageColors page currentPage =
     case currentPage of
         PageBaseProperties ->
-            if (page == PageBaseProperties) then
+            if page == PageBaseProperties then
                 Active
+
             else
                 None
 
         PageAdditionalProperties ->
-            if (page == PageAdditionalProperties) then
+            if page == PageAdditionalProperties then
                 Active
+
             else if page == PageBaseProperties then
                 Completed
+
             else
                 None
 
         PageSkillpoints ->
-            if (page == PageSkillpoints) then
+            if page == PageSkillpoints then
                 Active
-            else if (page == PageBaseProperties || page == PageAdditionalProperties) then
+
+            else if page == PageBaseProperties || page == PageAdditionalProperties then
                 Completed
+
             else
                 None
 
         PageCharacterSheet ->
-            if (page == PageCharacterSheet) then
+            if page == PageCharacterSheet then
                 Active
-            else if (page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints) then
+
+            else if page == PageBaseProperties || page == PageAdditionalProperties || page == PageSkillpoints then
                 Completed
+
             else
                 None
 
@@ -574,8 +594,10 @@ colorSteps : StepColors -> String
 colorSteps stepcolor =
     if stepcolor == Completed then
         "step-item is-completed is-primary"
+
     else if stepcolor == Active then
         "step-item is-active"
+
     else
         "step-item"
 
@@ -632,22 +654,20 @@ renderNextAndPreviousButtons model previousPage nextPage =
         [ div [ class "control" ]
             [ case previousPage of
                 Nothing ->
-                    (div [] [])
+                    div [] []
 
                 Just value ->
-                    (button [ class "button is-primary", onClick (ChangePage value) ]
+                    button [ class "button is-primary", onClick (ChangePage value) ]
                         [ text "Zurück" ]
-                    )
             ]
         , div [ class "control" ]
             [ case nextPage of
                 Nothing ->
-                    (div [] [])
+                    div [] []
 
                 Just value ->
-                    (button [ class "button is-primary", onClick (ChangePage value) ]
+                    button [ class "button is-primary", onClick (ChangePage value) ]
                         [ text "Weiter" ]
-                    )
             ]
         ]
 
@@ -658,7 +678,7 @@ addInput title placeholderText fieldType value readonlyInput =
         [ label [ class "label" ]
             [ text title ]
         , div [ class "control" ]
-            [ (Text.input
+            [ Text.input
                 (Text.defaultOptions (ChangeStringField fieldType))
                 [ class "input"
                 , type_ "text"
@@ -667,7 +687,6 @@ addInput title placeholderText fieldType value readonlyInput =
                 , disabled readonlyInput
                 ]
                 value
-              )
             ]
         ]
 
@@ -686,13 +705,13 @@ renderOrderedStaticList itemType character =
                 Interact ->
                     character.interact
     in
-        div []
-            (character.skillList
-                |> List.filter (\item -> item.itemType == itemType)
-                |> List.sortBy .value
-                |> List.reverse
-                |> (List.map (\input -> addInput input.name "" NoOp (toString (clamp 0 100 (input.value + typeBonus))) True))
-            )
+    div []
+        (character.skillList
+            |> List.filter (\item -> item.itemType == itemType)
+            |> List.sortBy .value
+            |> List.reverse
+            |> List.map (\input -> addInput input.name "" NoOp (String.fromInt (clamp 0 100 (input.value + typeBonus))) True)
+        )
 
 
 renderList : ListItemType -> List ListItem -> Html Msg
@@ -700,7 +719,7 @@ renderList itemType list =
     div []
         (list
             |> List.filter (\item -> item.itemType == itemType)
-            |> (List.map createListNumbers)
+            |> List.map createListNumbers
         )
 
 
@@ -774,7 +793,7 @@ renderHeaderAndPoints value gbpValue title =
                             [ Html.span [ class "tag is-large" ]
                                 [ text title ]
                             , Html.span [ class "tag is-primary is-large" ]
-                                [ text (toString value)
+                                [ text (String.fromInt value)
                                 ]
                             ]
                         ]
@@ -783,7 +802,7 @@ renderHeaderAndPoints value gbpValue title =
                             [ Html.span [ class "tag" ]
                                 [ text "Geistesblitzpunkte" ]
                             , Html.span [ class "tag is-primary" ]
-                                [ text (toString gbpValue)
+                                [ text (String.fromInt gbpValue)
                                 ]
                             ]
                         ]
@@ -791,7 +810,7 @@ renderHeaderAndPoints value gbpValue title =
                 ]
             ]
         , p [ class "card-header-icon is-centered no-print" ]
-            [ Html.span [ class "icon tooltip is-tooltip-multiline no-print", (attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt.") ]
+            [ Html.span [ class "icon tooltip is-tooltip-multiline no-print", attribute "data-tooltip" "Für alle 10 ausgegebenen Punkte, erhält die Kategorie in der du diese ausgibst einen Punkt." ]
                 [ i [ class "fa fa-question-circle  no-print" ]
                     []
                 ]
@@ -830,6 +849,7 @@ renderInputWithPlusButton value error itemType onClickEvent placeholderString =
             div [ class "notification is-danger" ]
                 [ text error
                 ]
+
           else
             div [] []
         ]

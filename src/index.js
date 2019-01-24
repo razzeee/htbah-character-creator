@@ -1,5 +1,7 @@
 require('./css/index.scss')
 
-const Elm = require('./Main.elm')
+import { Elm } from './Main.elm'
 
-Elm.Main.embed(document.getElementById('main'))
+Elm.Main.init({
+    node: document.querySelector('main')
+})
