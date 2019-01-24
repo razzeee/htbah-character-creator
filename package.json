@@ -2,7 +2,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src/**/*.js",
     "dev": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && parcel src/index.html",
-    "build": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && && parcel build src/index.html"
+    "build": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && parcel build src/index.html"
   },
   "devDependencies": {
     "bulma": "^0.7.1",
