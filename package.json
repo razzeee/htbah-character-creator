@@ -5,14 +5,15 @@
     "build": "cpx \"src/img/**/*{.png,jpg}\" \"dist/img\" && parcel build src/index.html --public-url ./"
   },
   "devDependencies": {
-    "bulma": "^0.7.1",
+    "bulma": "^0.7.5",
     "bulma-steps": "^1.0.2",
     "bulma-tooltip": "^1.0.4",
     "cpx": "^1.5.0",
-    "eslint": "^5.12.1",
-    "node-elm-compiler": "^5.0.1",
-    "parcel-bundler": "^1.11.0",
-    "sass": "^1.16.1"
+    "elm-hot": "^1.1.0",
+    "eslint": "^6.0.1",
+    "node-elm-compiler": "^5.0.3",
+    "parcel-bundler": "^1.12.3",
+    "sass": "^1.22.7"
   },
   "license": "MIT",
   "dependencies": {}

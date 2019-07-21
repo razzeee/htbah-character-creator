@@ -3,11 +3,10 @@ module Main exposing (Character, ListItem, ListItemType(..), Model, Msg(..), Pag
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick)
 import Input.Number as Number
 import Input.Text as Text
 import List.Extra exposing (..)
-import Random
 
 
 main : Program () Model Msg
@@ -26,8 +25,8 @@ type alias Model =
     , inputNewActsItemError : String
     , inputNewKnowledgeItem : String
     , inputNewKnowledgeItemError : String
-    , inputNewInteractItem : String
-    , inputNewInteractItemError : String
+    , inputNewSocialItem : String
+    , inputNewSocialItemError : String
     }
 
 
@@ -53,12 +52,13 @@ type StepColors
 type ListItemType
     = Acts
     | Knowledge
-    | Interact
+    | Social
 
 
 type alias ListItem =
     { name : String
     , value : Int
+    , calculatedValue : Int
     , itemType : ListItemType
     }
 
@@ -67,7 +67,6 @@ type StringFieldType
     = Name
     | FirstName
     | Stature
-    | PrimaryLanguage
     | Religion
     | Sex
     | Age
@@ -80,7 +79,6 @@ type alias Character =
     { name : String
     , firstName : String
     , stature : String
-    , primaryLanguage : String
     , religion : String
     , sex : String
     , age : String
@@ -90,8 +88,8 @@ type alias Character =
     , skillList : List ListItem
     , knowledge : Int
     , knowledgeGBP : Int
-    , interact : Int
-    , interactGBP : Int
+    , social : Int
+    , socialGBP : Int
     , acts : Int
     , actsGBP : Int
     , assignedSkillpoints : Int
@@ -104,7 +102,6 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model
         (Character ""
-            ""
             ""
             ""
             ""
@@ -165,9 +162,6 @@ update msg model =
                 Stature ->
                     ( { model | character = { character | stature = value } }, Cmd.none )
 
-                PrimaryLanguage ->
-                    ( { model | character = { character | primaryLanguage = value } }, Cmd.none )
-
                 Religion ->
                     ( { model | character = { character | religion = value } }, Cmd.none )
 
@@ -218,12 +212,26 @@ update msg model =
                 knowledgeGBP =
                     round (toFloat knowledgeTotal / 10)
 
-                {--Interact --}
-                interactTotal =
-                    calculateTotal character Interact
+                {--Social --}
+                socialTotal =
+                    calculateTotal character Social
 
-                interactGBP =
-                    round (toFloat interactTotal / 10)
+                socialGBP =
+                    round (toFloat socialTotal / 10)
+
+                calcTotal value4 =
+                    if value4.value == 0 then
+                        0
+                    else 
+                        case value4.itemType of
+                            Acts ->
+                                actsTotal
+
+                            Knowledge ->
+                                knowledgeTotal
+
+                            Social ->
+                                socialTotal
 
                 skillListNew =
                     if sumAndCurrentValue <= 400 then
@@ -231,18 +239,21 @@ update msg model =
 
                     else
                         model.character.skillList
+
+                updatedSkillList =
+                    List.Extra.updateIf (\value3 -> True) (\input -> { input | calculatedValue = input.value + calcTotal input }) skillListNew
             in
             ( { model
                 | character =
                     { character
-                        | skillList = skillListNew
+                        | skillList = updatedSkillList
                         , assignedSkillpoints = sumAndCurrentValue
                         , acts = actsTotal
                         , actsGBP = actsGBP
                         , knowledge = knowledgeTotal
                         , knowledgeGBP = knowledgeGBP
-                        , interact = interactTotal
-                        , interactGBP = interactGBP
+                        , social = socialTotal
+                        , socialGBP = socialGBP
                     }
               }
             , Cmd.none
@@ -266,8 +277,8 @@ update msg model =
                 Knowledge ->
                     ( { model | inputNewKnowledgeItem = value }, Cmd.none )
 
-                Interact ->
-                    ( { model | inputNewInteractItem = value }, Cmd.none )
+                Social ->
+                    ( { model | inputNewSocialItem = value }, Cmd.none )
 
         AddNewItemToList newValue itemType ->
             let
@@ -276,7 +287,7 @@ update msg model =
 
                 newList =
                     if checkIfValidNewItem newValue model.character.skillList then
-                        List.append model.character.skillList [ ListItem newValue 0 itemType ]
+                        List.append model.character.skillList [ ListItem newValue 0 0 itemType ]
 
                     else
                         model.character.skillList
@@ -298,8 +309,8 @@ update msg model =
                 Knowledge ->
                     ( { model | character = { character | skillList = newList }, inputNewKnowledgeItem = newInputItem, inputNewKnowledgeItemError = newInputItemError }, Cmd.none )
 
-                Interact ->
-                    ( { model | character = { character | skillList = newList }, inputNewInteractItem = newInputItem, inputNewInteractItemError = newInputItemError }, Cmd.none )
+                Social ->
+                    ( { model | character = { character | skillList = newList }, inputNewSocialItem = newInputItem, inputNewSocialItemError = newInputItemError }, Cmd.none )
 
 
 calculateTotal : Character -> ListItemType -> Int
@@ -370,7 +381,7 @@ pageBaseProperties model =
                 , addInput "Geschlecht" "Welchem Geschlecht gehört dein Charakter an?" Sex model.character.sex False
                 ]
             ]
-        , renderNextAndPreviousButtons model Nothing (Just PageAdditionalProperties)
+        , renderNextAndPreviousButtons Nothing (Just PageAdditionalProperties)
         ]
 
 
@@ -381,12 +392,11 @@ pageAdditionalProperties model =
             [ div [ class "column" ]
                 [ addInput "Beruf" "Dein Beruf, z.B. Busfahrer oder Drachenjäger." Job model.character.job False
                 , addInput "Statur" "Die Statur deines Characters, sollte zum Beruf passen." Stature model.character.stature False
-                , addInput "Muttersprache" "Die Muttersprache deines Characters." PrimaryLanguage model.character.primaryLanguage False
                 , addInput "Religion" "Deine Religion." Religion model.character.religion False
                 , addInput "Familienstand" "Wie ist dein Familienstand?" FamilyStatus model.character.familyStatus False
                 ]
             ]
-        , renderNextAndPreviousButtons model (Just PageBaseProperties) (Just PageSkillpoints)
+        , renderNextAndPreviousButtons (Just PageBaseProperties) (Just PageSkillpoints)
         ]
 
 
@@ -427,15 +437,15 @@ pageSkillpoints model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.interact model.character.interactGBP "Interagieren"
+                    [ renderHeaderAndPoints model.character.social model.character.socialGBP "Soziales"
                     , div [ class "card-content" ]
-                        [ renderList Interact model.character.skillList
-                        , renderInputWithPlusButton model.inputNewInteractItem model.inputNewInteractItemError Interact (AddNewItemToList model.inputNewInteractItem Interact) "Neue Interaktions-Begabung hinzufügen"
+                        [ renderList Social model.character.skillList
+                        , renderInputWithPlusButton model.inputNewSocialItem model.inputNewSocialItemError Social (AddNewItemToList model.inputNewSocialItem Social) "Neue Soziales-Begabung hinzufügen"
                         ]
                     ]
                 ]
             ]
-        , renderNextAndPreviousButtons model (Just PageAdditionalProperties) (Just PageCharacterSheet)
+        , renderNextAndPreviousButtons (Just PageAdditionalProperties) (Just PageCharacterSheet)
         ]
 
 
@@ -448,7 +458,6 @@ pageCharacterSheet model =
                 , addInput "Geschlecht" "" Sex model.character.sex True
                 , addInput "Alter" "" Age model.character.age True
                 , addInput "Statur" "" Stature model.character.stature True
-                , addInput "Muttersprache" "" PrimaryLanguage model.character.primaryLanguage True
                 ]
             , div [ class "column" ]
                 [ figure [ class "image is-square" ]
@@ -482,14 +491,14 @@ pageCharacterSheet model =
                 ]
             , div [ class "column" ]
                 [ div [ class "card" ]
-                    [ renderHeaderAndPoints model.character.interact model.character.interactGBP "Interagieren"
+                    [ renderHeaderAndPoints model.character.social model.character.socialGBP "Soziales"
                     , div [ class "card-content" ]
-                        [ renderOrderedStaticList Interact model.character
+                        [ renderOrderedStaticList Social model.character
                         ]
                     ]
                 ]
             ]
-        , renderNextAndPreviousButtons model (Just PageSkillpoints) Nothing
+        , renderNextAndPreviousButtons (Just PageSkillpoints) Nothing
         ]
 
 
@@ -648,8 +657,8 @@ renderStepsOverview model =
         ]
 
 
-renderNextAndPreviousButtons : Model -> Maybe Page -> Maybe Page -> Html Msg
-renderNextAndPreviousButtons model previousPage nextPage =
+renderNextAndPreviousButtons : Maybe Page -> Maybe Page -> Html Msg
+renderNextAndPreviousButtons previousPage nextPage =
     div [ class "field  is-grouped is-grouped-centered no-print" ]
         [ div [ class "control" ]
             [ case previousPage of
@@ -702,8 +711,8 @@ renderOrderedStaticList itemType character =
                 Knowledge ->
                     character.knowledge
 
-                Interact ->
-                    character.interact
+                Social ->
+                    character.social
     in
     div []
         (character.skillList
@@ -740,6 +749,20 @@ createListNumbers listItem =
                     [ class "input"
                     ]
                     (Just listItem.value)
+                ]
+            , div [ class "control" ]
+                [ Number.input
+                    { onInput = ChangeValueInList listItem.name
+                    , maxLength = Nothing
+                    , maxValue = Just 100
+                    , minValue = Just 0
+                    , hasFocus = Nothing
+                    }
+                    [ class "input"
+                    , readonly True
+                    , disabled True
+                    ]
+                    (Just listItem.calculatedValue)
                 ]
             , div [ class "control" ] [ button [ class "button is-danger", onClick (RemoveItemFromList listItem.name) ] [ i [ class "fa fa-trash" ] [] ] ]
             ]
