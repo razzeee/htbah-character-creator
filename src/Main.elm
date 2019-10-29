@@ -222,7 +222,8 @@ update msg model =
                 calcTotal value4 =
                     if value4.value == 0 then
                         0
-                    else 
+
+                    else
                         case value4.itemType of
                             Acts ->
                                 actsTotal
